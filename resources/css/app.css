@@ -14,6 +14,11 @@
     --color-primary-content: #ffffff;
 }
 
+.input:focus,
+.input:focus-within {
+    --input-color: var(--color-primary);
+}
+
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';

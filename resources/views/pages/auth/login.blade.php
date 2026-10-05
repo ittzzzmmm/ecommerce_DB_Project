@@ -5,55 +5,62 @@
         <!-- Session Status -->
         <x-auth-session-status class="text-center" :status="session('status')" />
 
-        <x-passkey-verify />
+    
 
         <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-6">
             @csrf
 
             <!-- Email Address -->
-            <flux:input
-                name="email"
-                :label="__('Email address')"
-                :value="old('email')"
-                type="email"
-                required
-                autofocus
-                autocomplete="email"
-                placeholder="email@example.com"
-            />
+           <div>
+                <label for="email" class="block font-medium mb-1">{{ __('Email') }}</label>
+                <input
+                    id="email"
+                    name="email"
+                    value="{{ old('email') }}"
+                    type="email"
+                    required
+                    autocomplete="email"
+                    placeholder="{{ __('Enter your email') }}"
+                    class="input w-full rounded-lg @error('email') input-error @enderror"
+                />
+                @error('email')
+                    <p class="text-error text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
 
             <!-- Password -->
             <div class="relative">
-                <flux:input
+              <label for="password" class="block font-medium mb-1">{{ __('Password') }}</label>
+                <input
+                    id="password"
                     name="password"
-                    :label="__('Password')"
                     type="password"
                     required
                     autocomplete="current-password"
-                    :placeholder="__('Password')"
-                    viewable
+                    placeholder="{{ __('password') }}"
+                    class="input w-full rounded-lg @error('password') input-error @enderror"
                 />
-
-                @if (Route::has('password.request'))
-                    <flux:link class="absolute top-0 text-sm end-0" :href="route('password.request')" wire:navigate>
-                        {{ __('Forgot your password?') }}
-                    </flux:link>
-                @endif
+                @error('password')
+                    <p class="text-error text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
-            <!-- Remember Me -->
-            <flux:checkbox name="remember" :label="__('Remember me')" :checked="old('remember')" />
+           <!-- Remember Me -->
+<label class="flex items-center gap-2 text-sm cursor-pointer">
+    <input type="checkbox" name="remember" class="checkbox checkbox-primary checkbox-sm" @checked(old('remember'))>
+    {{ __('Remember me') }}
+</label>
 
-            <div class="flex items-center justify-end">
-                <flux:button variant="primary" type="submit" class="w-full" data-test="login-button">
-                    {{ __('Log in') }}
-                </flux:button>
-            </div>
+           <div class="flex items-center justify-end mt-4">
+    <button type="submit" class="btn btn-primary btn-block rounded-lg font-[Poppins] font-semibold" data-test="login-button">
+        {{ __('Login') }}
+    </button>
+</div>
         </form>
 
-        <div class="space-x-1 text-sm text-center rtl:space-x-reverse text-zinc-600 dark:text-zinc-400">
+        <div class="space-x-1 text-sm text-center rtl:space-x-reverse text-sm font-[Poppins]">
             <span>{{ __('Don\'t have an account?') }}</span>
-            <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
+              <a href="{{ route('register') }}" class="link link-primary link-hover" wire:navigate>{{ __('Sign up') }}</a>
         </div>
     </div>
 </x-layouts::auth>
