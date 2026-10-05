@@ -1,6 +1,19 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
 
+/* DaisyUI: ใช้ธีม light อย่างเดียว */
+@plugin "daisyui" {
+    themes: light --default;
+}
+
+/* ปรับสี primary ของธีม light ให้ตรงกับ Figma */
+@plugin "daisyui/theme" {
+    name: "light";
+    default: true;
+    --color-primary: #5A6BD5;
+    --color-primary-content: #ffffff;
+}
+
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
