@@ -87,4 +87,9 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     {
         return $this->hasMany(CouponUsage::class);
     }
+
+    public function cart(): HasOne
+    {
+        return $this->hasOne(Cart::class);
+    }
 }
