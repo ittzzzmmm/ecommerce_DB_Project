@@ -10,6 +10,8 @@ class HomeController extends Controller
     public function index(){
         $products = Product::withAvg('reviews', 'rating')
                             ->orderByDesc('reviews_avg_rating')
-                            ->get();    
+                            ->get();
+                            
+        return view('dashboard', compact('products'));
     }
 }
