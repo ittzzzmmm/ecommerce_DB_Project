@@ -104,7 +104,8 @@ Route::get('/products/{product}', function ($product) use ($demoProducts) {
 })->name('products.show');
 
 Route::middleware(['auth'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    // ล็อกอิน/สมัครเสร็จ Fortify จะพามาที่ /dashboard → เด้งต่อไปหน้า Home
+    Route::get('dashboard', fn () => redirect()->route('home'))->name('dashboard');
 });
 
 require __DIR__.'/settings.php';
