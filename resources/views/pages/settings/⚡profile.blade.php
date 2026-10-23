@@ -77,46 +77,41 @@ new #[Layout('layouts::shop')] #[Title('Profile settings')] class extends Compon
     }
 };
 ?>
-
-<div class="flex flex-col md:flex-row gap-6">
+<div class="flex flex-col lg:flex-row gap-8 lg:gap-8">
     <!-- เมนูด้านซ้าย -->
-    <aside class="md:w-56 shrink-0">
-        <div class="flex items-center gap-3 pb-4 mb-4 border-b border-base-300">
+    <aside class="lg:w-72 shrink-0">
+        <div class="flex items-center gap-5 pb-4 mb-6 border-b border-base-300">
             <div class="avatar avatar-placeholder">
-                <div class="w-12 rounded-full bg-primary text-primary-content">
-                    <span class="font-bold">{{ auth()->user()->initials() }}</span>
+                <div class="w-24 rounded-full bg-[#090F3B] text-white">
+                    <span class="text-2xl font-bold">{{ auth()->user()->initials() }}</span>
                 </div>
             </div>
             <div class="min-w-0">
-                <p class="font-medium truncate">{{ auth()->user()->name }}</p>
-                <a href="{{ route('profile.edit') }}" class="text-sm text-base-content/60 hover:text-primary" wire:navigate>{{ __('Edit Profile') }}</a>
+                <p class="text-xl font-medium truncate">{{ auth()->user()->name }}</p>
+                <a href="{{ route('profile.edit') }}" class="text-primary hover:underline" wire:navigate>{{ __('edit profile') }}</a>
             </div>
         </div>
 
-        <ul class="menu w-full p-0 font-[Poppins] text-sm">
-            <li class="menu-title text-black">{{ __('My Account') }}</li>
-            <li><a href="{{ route('profile.edit') }}" class="bg-primary/10 text-primary font-semibold" wire:navigate>{{ __('Profile') }}</a></li>
-            <li><a href="{{ route('security.edit') }}" wire:navigate>{{ __('Change Password') }}</a></li>
+        <nav class="flex flex-col gap-1 px-1">
+            <p class="font-medium">{{ __('My Account') }}</p>
+            <a href="{{ route('profile.edit') }}" class="pl-1 text-primary font-semibold" wire:navigate>{{ __('profile') }}</a>
+            <a href="{{ route('security.edit') }}" class="pl-1 text-primary hover:underline" wire:navigate>{{ __('change password') }}</a>
 
-            <li class="menu-title text-black mt-2">{{ __('My Purchase') }}</li>
-            <li class="menu-disabled"><span>{{ __('Coming soon') }}</span></li>
-        </ul>
+            <p class="font-medium mt-4">{{ __('My Purchase') }}</p>
+        </nav>
     </aside>
 
-    <!-- การ์ดข้อมูลโปรไฟล์ -->
-    <section class="flex-1 card bg-white shadow-sm">
-        <div class="card-body p-6 md:p-8">
-            <div class="border-b border-base-300 pb-4 mb-6">
-                <h1 class="text-xl font-medium">{{ __('My Profile') }}</h1>
-                <p class="text-sm text-base-content/60">{{ __('Manage and protect your account') }}</p>
-            </div>
+    <!-- การ์ดข้อมูลโปรไฟล์ (เงาสีม่วงด้านล่างตาม Figma) -->
+    <section class="flex-1 bg-white rounded-md border border-base-200 shadow-[0_4px_4px_rgba(30,42,110,0.6)] min-h-[40rem]">
+        <div class="p-6 md:p-8 flex flex-col-reverse lg:flex-row gap-10">
+            <div class="flex-1">
+                <h1 class="text-4xl font-bold">{{ __('My Profile') }}</h1>
+                <p class="text-primary mt-1">{{ __('manage and protect your account') }}</p>
 
-            <div class="flex flex-col-reverse lg:flex-row gap-8">
-                <!-- ฟอร์ม -->
-                <form wire:submit="updateProfileInformation" class="flex-1 flex flex-col gap-5">
+                <form wire:submit="updateProfileInformation" class="mt-12 flex flex-col gap-4 max-w-xl px-1 md:px-8">
                     <!-- Name -->
-                    <div class="grid md:grid-cols-[8rem_1fr] md:items-center gap-1 md:gap-4">
-                        <label for="name" class="md:text-right text-base-content/70">{{ __('Name') }}</label>
+                    <div class="grid sm:grid-cols-[5.5rem_1fr] sm:items-center gap-1 sm:gap-3">
+                        <label for="name" class="font-medium">{{ __('Name') }}</label>
                         <div>
                             <input
                                 id="name"
@@ -125,7 +120,8 @@ new #[Layout('layouts::shop')] #[Title('Profile settings')] class extends Compon
                                 required
                                 autofocus
                                 autocomplete="name"
-                                class="input w-full rounded-lg @error('name') input-error @enderror"
+                                placeholder="{{ __('Enter your name') }}"
+                                class="input input-sm h-8 w-full rounded-md @error('name') input-error @enderror"
                             />
                             @error('name')
                                 <p class="text-error text-sm mt-1">{{ $message }}</p>
@@ -134,8 +130,8 @@ new #[Layout('layouts::shop')] #[Title('Profile settings')] class extends Compon
                     </div>
 
                     <!-- Email -->
-                    <div class="grid md:grid-cols-[8rem_1fr] gap-1 md:gap-4">
-                        <label for="email" class="md:text-right md:pt-2 text-base-content/70">{{ __('Email') }}</label>
+                    <div class="grid sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3">
+                        <label for="email" class="font-medium sm:pt-1">{{ __('Email') }}</label>
                         <div>
                             <input
                                 id="email"
@@ -143,7 +139,8 @@ new #[Layout('layouts::shop')] #[Title('Profile settings')] class extends Compon
                                 type="email"
                                 required
                                 autocomplete="email"
-                                class="input w-full rounded-lg @error('email') input-error @enderror"
+                                placeholder="{{ __('Enter your email') }}"
+                                class="input input-sm h-8 w-full rounded-md @error('email') input-error @enderror"
                             />
                             @error('email')
                                 <p class="text-error text-sm mt-1">{{ $message }}</p>
@@ -151,49 +148,52 @@ new #[Layout('layouts::shop')] #[Title('Profile settings')] class extends Compon
 
                             <!-- สถานะยืนยันอีเมล -->
                             @if ($this->hasUnverifiedEmail)
-                                <div class="mt-2 text-sm">
-                                    <span class="badge badge-warning badge-sm">{{ __('Unverified') }}</span>
-                                    <button type="button" class="link link-primary ml-1" wire:click.prevent="resendVerificationNotification">
+                                <div class="mt-1 text-xs flex flex-wrap gap-x-4">
+                                    <span class="text-error">{{ __('unverified') }}</span>
+                                    <button type="button" class="text-primary hover:underline" wire:click.prevent="resendVerificationNotification">
                                         {{ __('Re-send verification email') }}
                                     </button>
-
-                                    @if (session('status') === 'verification-link-sent')
-                                        <p class="text-success mt-1">{{ __('A new verification link has been sent to your email address.') }}</p>
-                                    @endif
                                 </div>
+
+                                @if (session('status') === 'verification-link-sent')
+                                    <p class="text-success text-xs mt-1">{{ __('A new verification link has been sent to your email address.') }}</p>
+                                @endif
                             @else
-                                <span class="badge badge-success badge-sm mt-2">{{ __('Verified') }}</span>
+                                <p class="mt-1 text-xs text-success">{{ __('verified') }}</p>
                             @endif
                         </div>
                     </div>
 
-                    <!-- Member since (แสดงอย่างเดียว แก้ไม่ได้) -->
-                    <div class="grid md:grid-cols-[8rem_1fr] gap-1 md:gap-4">
-                        <span class="md:text-right text-base-content/70">{{ __('Member since') }}</span>
-                        <span>{{ auth()->user()->created_at?->format('d M Y') }}</span>
+                    <!-- ข้อมูลแสดงอย่างเดียว (แก้ไม่ได้) -->
+                    <div class="mt-6 grid grid-cols-[9rem_1fr] items-center gap-y-4">
+                        <span class="font-medium">{{ __('Payment Details') }}</span>
+                        <span class="text-xs text-primary">{{ auth()->user()->payment_details ?? '-' }}</span>
+
+                        <span class="font-medium">{{ __('Billing Address') }}</span>
+                        <span class="text-xs text-primary">{{ auth()->user()->billing_address ?? '-' }}</span>
+
+                        <span class="font-medium">{{ __('Member since') }}</span>
+                        <span class="text-sm text-primary">{{ auth()->user()->created_at?->format('d M Y') }}</span>
                     </div>
 
                     <!-- Save -->
-                    <div class="grid md:grid-cols-[8rem_1fr] gap-4">
-                        <div class="hidden md:block"></div>
-                        <div>
-                            <button type="submit" class="btn btn-primary rounded-lg px-8 font-[Poppins] font-semibold" data-test="update-profile-button" wire:loading.attr="disabled">
-                                <span wire:loading.remove wire:target="updateProfileInformation">{{ __('Save') }}</span>
-                                <span wire:loading wire:target="updateProfileInformation" class="loading loading-spinner loading-sm"></span>
-                            </button>
-                        </div>
+                    <div class="mt-2">
+                        <button type="submit" class="btn btn-sm h-9 rounded-xl border-none bg-[#1E2A6E] hover:bg-[#090F3B] text-white px-6 font-semibold" data-test="update-profile-button" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="updateProfileInformation">{{ __('Save') }}</span>
+                            <span wire:loading wire:target="updateProfileInformation" class="loading loading-spinner loading-sm"></span>
+                        </button>
                     </div>
                 </form>
+            </div>
 
-                <!-- รูปโปรไฟล์ (ตอนนี้แสดงตัวอักษรย่อ เพราะยังไม่มีระบบอัปโหลดรูป) -->
-                <div class="lg:w-56 lg:border-l border-base-300 lg:pl-8 flex flex-col items-center gap-3">
-                    <div class="avatar avatar-placeholder">
-                        <div class="w-24 rounded-full bg-primary text-primary-content">
-                            <span class="text-3xl font-bold">{{ auth()->user()->initials() }}</span>
-                        </div>
+            <!-- รูปโปรไฟล์ (ตอนนี้แสดงตัวอักษรย่อ เพราะยังไม่มีระบบอัปโหลดรูป) -->
+            <div class="lg:w-56 lg:pt-6 flex flex-col items-center gap-4">
+                <div class="avatar avatar-placeholder">
+                    <div class="w-44 rounded-full bg-[#090F3B] text-white">
+                        <span class="text-5xl font-bold">{{ auth()->user()->initials() }}</span>
                     </div>
-                    <p class="text-xs text-base-content/50 text-center">{{ __('Profile picture coming soon') }}</p>
                 </div>
+                <button type="button" class="text-primary hover:underline" disabled>{{ __('edit profile picture') }}</button>
             </div>
         </div>
     </section>
