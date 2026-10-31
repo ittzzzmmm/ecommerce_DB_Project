@@ -11,7 +11,7 @@ class HomeController extends Controller
         $products = Product::withAvg('reviews', 'rating')
                             ->orderByDesc('reviews_avg_rating')
                             ->get();
-                            
+
         return view('dashboard', compact('products'));
     }
 }
