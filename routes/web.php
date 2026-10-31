@@ -97,7 +97,7 @@ Route::get('/products', function (Request $request) use ($demoProducts) {
 Route::get('/products/{product}', function ($product) use ($demoProducts) {
     $all = $demoProducts();
     $product = $all->firstWhere('id', (int) $product) ?? abort(404);
-    $inWishlist = false;
+    $inWishlist = in_array($product->id, session('demo_wishlist', []));
     $related = $all->where('id', '!=', $product->id)->shuffle()->take(5)->values();
 
     return view('products.show', compact('product', 'inWishlist', 'related'));
@@ -106,6 +106,28 @@ Route::get('/products/{product}', function ($product) use ($demoProducts) {
 Route::middleware(['auth'])->group(function () {
     // ล็อกอิน/สมัครเสร็จ Fortify จะพามาที่ /dashboard → เด้งต่อไปหน้า Home
     Route::get('dashboard', fn () => redirect()->route('home'))->name('dashboard');
+});
+
+//wishlist
+Route::middleware(['auth'])->group(function () use ($demoProducts){
+Route::get('wishlist', function () use ($demoProducts) {
+        $all = $demoProducts()->keyBy('id');
+        $wishlists = collect(session('demo_wishlist', []))
+            ->filter(fn ($id) => $all->has($id))
+            ->map(fn ($id) => (object) ['id' => $id, 'product' => $all[$id]])
+            ->values();
+
+        return view('wishlist', compact('wishlists'));
+    })->name('wishlist.index');
+
+Route::post('wishlist/{product}', function ($product) {
+        $list = collect(session('demo_wishlist', []));
+        $added = ! $list->contains((int) $product);
+        $list = $added ? $list->push((int) $product) : $list->reject(fn ($id) => $id === (int) $product);
+        session(['demo_wishlist' => $list->values()->all()]);
+
+        return back()->with('status', $added ? __('Added to wish list.') : __('Removed from wish list.'));
+    })->name('wishlist.toggle');
 });
 
 require __DIR__.'/settings.php';
