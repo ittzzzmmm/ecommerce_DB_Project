@@ -109,6 +109,8 @@ Route::middleware(['auth'])->group(function () {
 });
 
 //wishlist
+// ชั่วคราวไว้ทดสอบหน้า Wishlist: เก็บ id สินค้าที่กดหัวใจไว้ใน session แทน DB
+// เขียนทับเป็น Controller ได้ — คง ->name('wishlist.index' / 'wishlist.toggle') และ compact('wishlists') ไว้
 Route::middleware(['auth'])->group(function () use ($demoProducts){
 Route::get('wishlist', function () use ($demoProducts) {
         $all = $demoProducts()->keyBy('id');
