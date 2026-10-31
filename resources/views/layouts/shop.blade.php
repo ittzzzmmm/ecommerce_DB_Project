@@ -12,9 +12,6 @@
         @php
             // จำนวนชิ้นในตะกร้า (โชว์เป็นตัวเลขบนปุ่ม Cart) — ใช้ได้เมื่อมี model CartItem ของ backend แล้ว
             $cartCount = 0;
-            if (auth()->check() && class_exists(\App\Models\CartItem::class)) {
-                $cartCount = (int) \App\Models\CartItem::whereHas('cart', fn ($q) => $q->where('user_id', auth()->id()))->sum('quantity');
-            }
             $cartUrl = Route::has('cart.index') ? route('cart.index') : '#';
             $wishlistUrl = Route::has('wishlist.index') ? route('wishlist.index') : '#';
         @endphp
