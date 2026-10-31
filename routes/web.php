@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 | เพื่อให้ดูหน้าได้โดยยังไม่ต้องมี Model ของ back
 | พอทำ Controller เสร็จ ให้เปลี่ยนเป็นดึงจาก DB จริง
 | โดยใช้ "ชื่อ route" และ "ชื่อตัวแปร" เดิม:
-|   home           → $recommended, $newArrivals
+|   home           → $products (recommended, newArrivals)
 |   products.index → $products (paginate)
 |   products.show  → $product, $inWishlist, $related
 | ชื่อ field ตรงกับตาราง products ของour team spc na: id, name, description, price, stock, image
@@ -61,12 +61,12 @@ $demoProducts = function () {
 
 Route::get('/', function () use ($demoProducts) {
     $all = $demoProducts();
-    $recommended = $all->sortByDesc('reviews_avg_rating')->take(10)->values();
-    $newArrivals = $all->sortByDesc('created_at')->take(5)->values();
-
-    return view('home', compact('recommended', 'newArrivals'));
+    $products = $all->sortByDesc('reviews_avg_rating')->values();
+   
+    return view('home', compact('products'));
 })->name('home');
 
+// ชั่วคราวไว้ทดสอบหน้า Products (ค้นหา/เรียง/แบ่งหน้าด้วยข้อมูลตัวอย่าง)
 Route::get('/products', function (Request $request) use ($demoProducts) {
     $all = $demoProducts();
 

@@ -33,7 +33,7 @@
                 </div>
 
                 <!-- สินค้าเด่น 1 ชิ้น -->
-                @if ($featured = $recommended->first())
+                @if ($featured = $products->first())
                     <div class="hidden md:block justify-self-end w-64 rotate-2 hover:rotate-0 transition duration-300">
                         <x-product-card :product="$featured" class="shadow-2xl" />
                         <p class="mt-3 text-center text-sm text-white/80 font-[Poppins]">{{ __('Top rated') }} ★</p>
@@ -70,11 +70,11 @@
                 <a href="{{ route('products.index') }}" class="link link-primary link-hover font-[Poppins] text-sm shrink-0">{{ __('View all') }} &rarr;</a>
             </div>
 
-            @if ($recommended->isEmpty())
+            @if ($products->isEmpty())
                 <div class="bg-white rounded-2xl p-10 text-center text-gray-500">{{ __('No products yet.') }}</div>
             @else
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-                    @foreach ($recommended as $product)
+                    @foreach ($products->take(10) as $product)
                         <x-product-card :product="$product" />
                     @endforeach
                 </div>
@@ -82,6 +82,7 @@
         </section>
 
         <!-- ===== สินค้าใหม่ ===== -->
+       @php($newArrivals = $products->sortByDesc('created_at')->take(5))
         @if ($newArrivals->isNotEmpty())
             <section>
                 <div class="flex items-end justify-between gap-4 mb-6">
