@@ -15,6 +15,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\HomeController;
 use App\Models\Product;
 
@@ -62,16 +63,12 @@ $demoProducts = function () {
 };
 
 Route::get('/', function () {
-    // สินค้าแนะนำ เรียงตามคะแนนรีวิว
-    $recommended = Product::withAvg('reviews', 'rating')
+    $products = Product::withAvg('reviews', 'rating')
         ->orderByDesc('reviews_avg_rating')
         ->take(10)
         ->get();
-    // สินค้าใหม่
-    $newArrivals = Product::latest()
-        ->take(5)
-        ->get();
-    return view('home', compact('recommended', 'newArrivals'));
+
+    return view('home', compact('products'));
 })->name('home');
 
 Route::get('/products', function (Request $request) {
@@ -136,25 +133,65 @@ Route::middleware(['auth'])->group(function () {
 //wishlist
 // ชั่วคราวไว้ทดสอบหน้า Wishlist: เก็บ id สินค้าที่กดหัวใจไว้ใน session แทน DB
 // เขียนทับเป็น Controller ได้ — คง ->name('wishlist.index' / 'wishlist.toggle') และ compact('wishlists') ไว้
-Route::middleware(['auth'])->group(function () use ($demoProducts){
-Route::get('wishlist', function () use ($demoProducts) {
-        $all = $demoProducts()->keyBy('id');
-        $wishlists = collect(session('demo_wishlist', []))
-            ->filter(fn ($id) => $all->has($id))
-            ->map(fn ($id) => (object) ['id' => $id, 'product' => $all[$id]])
-            ->values();
+// Wishlist
+Route::middleware(['auth'])->group(function () {
+
+    // Display Wishlist
+    Route::get('wishlist', function () {
+
+        $wishlists = DB::table('wishlists')
+            ->join('products', 'wishlists.product_id', '=', 'products.id')
+            ->where('wishlists.user_id', auth()->id())
+            ->select(
+                'wishlists.id as wishlist_id',
+                'products.*'
+            )
+            ->selectSub(
+                DB::table('reviews')
+                    ->selectRaw('AVG(rating)')
+                    ->whereColumn('reviews.product_id', 'products.id'),
+                'reviews_avg_rating'
+            )
+            ->latest('wishlists.created_at')
+            ->get();
 
         return view('wishlist', compact('wishlists'));
+
     })->name('wishlist.index');
 
-Route::post('wishlist/{product}', function ($product) {
-        $list = collect(session('demo_wishlist', []));
-        $added = ! $list->contains((int) $product);
-        $list = $added ? $list->push((int) $product) : $list->reject(fn ($id) => $id === (int) $product);
-        session(['demo_wishlist' => $list->values()->all()]);
 
-        return back()->with('status', $added ? __('Added to wish list.') : __('Removed from wish list.'));
+    // Toggle Wishlist
+    Route::post('wishlist/{product}', function (Product $product) {
+
+        $wishlist = DB::table('wishlists')
+            ->where('user_id', auth()->id())
+            ->where('product_id', $product->id)
+            ->first();
+
+        if ($wishlist) {
+
+            DB::table('wishlists')
+                ->where('id', $wishlist->id)
+                ->delete();
+
+            $message = __('Removed from wish list.');
+
+        } else {
+
+            DB::table('wishlists')->insert([
+                'user_id' => auth()->id(),
+                'product_id' => $product->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $message = __('Added to wish list.');
+        }
+
+        return back()->with('status', $message);
+
     })->name('wishlist.toggle');
+
 });
 
 require __DIR__.'/settings.php';
