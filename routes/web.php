@@ -35,6 +35,8 @@ Route::post('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.
 // --- เช็คเอาต์ (Checkout) ---
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::post('/checkout/coupon', [App\Http\Controllers\CheckoutController::class, 'applyCoupon'])->name('checkout.coupon');
+
 
 // --- Dev Login (เฉพาะช่วงทดสอบ) ---
 Route::get('/dev-login/{id?}', function ($id = 1) {
