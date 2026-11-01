@@ -1,6 +1,7 @@
 <x-layouts::auth :title="__('Log in')">
     <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
+        <!-- Header (ตาม Figma: หัวข้อเดียวกับหน้า Sign Up) -->
+        <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2">{{ __('Welcome to CPE10') }}</h1>
 
         <!-- Session Status -->
         <x-auth-session-status class="text-center" :status="session('status')" />
