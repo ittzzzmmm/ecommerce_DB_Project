@@ -129,7 +129,7 @@
             <!-- add to wishlist -->
             <div class="mt-5">
                 @auth
-                    <form method="POST" action="{{ $canWishlist ? route('wishlist.toggle', $product) : '#' }}">
+                    <form method="POST" action="{{ $canWishlist ? route('wishlist.toggle', $product->id) : '#' }}">
                         @csrf
                         <button type="submit" class="inline-flex items-center gap-2 text-[#5A6BD5] hover:text-[#3B4BB0] disabled:opacity-50" data-test="wishlist-button" @disabled(! $canWishlist)>
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="{{ $inWishlist ? 'currentColor' : 'none' }}">
@@ -163,7 +163,7 @@
     </section>
 
     <!-- ===== สินค้าอื่นที่น่าสนใจ ===== -->
-    @if ($related->isNotEmpty())
+    @if (isset($related) && $related->isNotEmpty())
         <section class="mt-12">
             <h2 class="text-2xl font-bold text-[#1F2937] mb-6">{{ __('You may also like') }}</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">

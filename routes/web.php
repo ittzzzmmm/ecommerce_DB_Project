@@ -23,7 +23,7 @@ use App\Models\Product;
 | เพื่อให้ดูหน้าได้โดยยังไม่ต้องมี Model ของ back
 | พอทำ Controller เสร็จ ให้เปลี่ยนเป็นดึงจาก DB จริง
 | โดยใช้ "ชื่อ route" และ "ชื่อตัวแปร" เดิม:
-|   home           → $recommended, $newArrivals
+|   home           → $products (recommended, newArrivals)
 |   products.index → $products (paginate)
 |   products.show  → $product, $inWishlist, $related
 | ชื่อ field ตรงกับตาราง products ของour team spc na: id, name, description, price, stock, image
@@ -131,6 +131,30 @@ Route::get('/products/{product}', function (Product $product) {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
+});
+
+//wishlist
+// ชั่วคราวไว้ทดสอบหน้า Wishlist: เก็บ id สินค้าที่กดหัวใจไว้ใน session แทน DB
+// เขียนทับเป็น Controller ได้ — คง ->name('wishlist.index' / 'wishlist.toggle') และ compact('wishlists') ไว้
+Route::middleware(['auth'])->group(function () use ($demoProducts){
+Route::get('wishlist', function () use ($demoProducts) {
+        $all = $demoProducts()->keyBy('id');
+        $wishlists = collect(session('demo_wishlist', []))
+            ->filter(fn ($id) => $all->has($id))
+            ->map(fn ($id) => (object) ['id' => $id, 'product' => $all[$id]])
+            ->values();
+
+        return view('wishlist', compact('wishlists'));
+    })->name('wishlist.index');
+
+Route::post('wishlist/{product}', function ($product) {
+        $list = collect(session('demo_wishlist', []));
+        $added = ! $list->contains((int) $product);
+        $list = $added ? $list->push((int) $product) : $list->reject(fn ($id) => $id === (int) $product);
+        session(['demo_wishlist' => $list->values()->all()]);
+
+        return back()->with('status', $added ? __('Added to wish list.') : __('Removed from wish list.'));
+    })->name('wishlist.toggle');
 });
 
 require __DIR__.'/settings.php';
