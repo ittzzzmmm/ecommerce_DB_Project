@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ProductSeeder::class,
             CouponSeeder::class,
+            OrderSeeder::class,   // ต้องมาก่อน ReviewSeeder (รีวิวได้เฉพาะคนที่ซื้อแล้ว)
+            ReviewSeeder::class,
         ]);
     }
 }
