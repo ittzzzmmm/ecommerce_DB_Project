@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Http\Controllers\ReviewController;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
@@ -27,6 +28,13 @@ class ReviewSeeder extends Seeder
             $product = Product::where('name', $productName)->first();
 
             if (!$user || !$product) {
+                continue;
+            }
+
+            // กติกาเดียวกับหน้าเว็บ: ต้องเคยซื้อก่อนถึงรีวิวได้ (ออเดอร์มาจาก OrderSeeder)
+            // ⇒ sold ของสินค้าจะไม่มีทางน้อยกว่าจำนวนรีวิว
+            if (!ReviewController::hasPurchased($user, $product)) {
+                $this->command?->warn("Skip review: {$email} has not purchased {$productName} (add it to OrderSeeder).");
                 continue;
             }
 

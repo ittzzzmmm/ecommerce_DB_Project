@@ -10,8 +10,8 @@
             $cartCount = collect(session('cart', []))->sum(fn ($item) => is_array($item)
                 ? (int) ($item['quantity'] ?? 0)
                 : (int) $item);
-            // จำนวนสินค้าใน Wish List (ตอนนี้ WishlistController เก็บใน session demo_wishlist)
-            $wishlistCount = count(session('demo_wishlist', []));
+            // จำนวนสินค้าใน Wish List ของบัญชีนี้ (ตาราง wishlists)
+            $wishlistCount = auth()->check() ? auth()->user()->wishlists()->count() : 0;
             $cartUrl = Route::has('cart.index') ? route('cart.index') : '#';
             $wishlistUrl = Route::has('wishlist.index') ? route('wishlist.index') : '#';
         @endphp
