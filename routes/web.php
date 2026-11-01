@@ -9,13 +9,14 @@
 //     Route::view('dashboard', 'dashboard')->name('dashboard');
 // });
 
-// require __DIR__.'/settings.php';
+// require __DIR__.'/settings.php';x
 
 
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Models\Product;
 
 /*
 | ชั่วคราวฝั่ง Frontend: ใช้ "ข้อมูลสินค้าตัวอย่าง" แทน Database
@@ -60,52 +61,76 @@ $demoProducts = function () {
     ]);
 };
 
-Route::get('/', function () use ($demoProducts) {
-    $all = $demoProducts();
-    $recommended = $all->sortByDesc('reviews_avg_rating')->take(10)->values();
-    $newArrivals = $all->sortByDesc('created_at')->take(5)->values();
-
+Route::get('/', function () {
+    // สินค้าแนะนำ เรียงตามคะแนนรีวิว
+    $recommended = Product::withAvg('reviews', 'rating')
+        ->orderByDesc('reviews_avg_rating')
+        ->take(10)
+        ->get();
+    // สินค้าใหม่
+    $newArrivals = Product::latest()
+        ->take(5)
+        ->get();
     return view('home', compact('recommended', 'newArrivals'));
 })->name('home');
 
-Route::get('/products', function (Request $request) use ($demoProducts) {
-    $all = $demoProducts();
+Route::get('/products', function (Request $request) {
 
+    $query = Product::query();
+
+    // Search
     if ($request->filled('search')) {
-        $all = $all->filter(fn ($p) => str_contains(strtolower($p->name), strtolower($request->search)));
+        $query->where('name', 'like', '%' . $request->search . '%');
     }
 
-    $all = match ($request->input('sort')) {
-        'newest' => $all->sortByDesc('created_at'),
-        'price_asc' => $all->sortBy('price'),
-        'price_desc' => $all->sortByDesc('price'),
-        default => $all->sortByDesc('reviews_avg_rating'),
-    };
+    // Sort
+    $query->when($request->sort === 'newest', function ($q) {
+        $q->latest();
+    });
 
-    $perPage = 20;
-    $page = LengthAwarePaginator::resolveCurrentPage();
-    $products = new LengthAwarePaginator(
-        $all->values()->forPage($page, $perPage),
-        $all->count(),
-        $perPage,
-        $page,
-        ['path' => $request->url(), 'query' => $request->query()]
-    );
+    $query->when($request->sort === 'price_asc', function ($q) {
+        $q->orderBy('price', 'asc');
+    });
+
+    $query->when($request->sort === 'price_desc', function ($q) {
+        $q->orderBy('price', 'desc');
+    });
+
+    if (!$request->filled('sort')) {
+        $query->orderBy('created_at', 'desc');
+    }
+
+    // Pagination
+    $products = $query->paginate(20)->withQueryString();
 
     return view('products.index', compact('products'));
+
 })->name('products.index');
 
-Route::get('/products/{product}', function ($product) use ($demoProducts) {
-    $all = $demoProducts();
-    $product = $all->firstWhere('id', (int) $product) ?? abort(404);
-    $inWishlist = false;
-    $related = $all->where('id', '!=', $product->id)->shuffle()->take(5)->values();
+Route::get('/products/{product}', function (Product $product) {
 
-    return view('products.show', compact('product', 'inWishlist', 'related'));
+    // โหลดรูปภาพเพิ่มเติม
+    $product->load('images');
+
+    // ตรวจสอบ Wishlist (ชั่วคราว)
+    $inWishlist = false;
+
+    // สินค้าที่เกี่ยวข้อง
+    $related = Product::where('id', '!=', $product->id)
+        ->inRandomOrder()
+        ->take(5)
+        ->get();
+
+    return view('products.show', compact(
+        'product',
+        'inWishlist',
+        'related'
+    ));
+
 })->name('products.show');
 
 Route::middleware(['auth'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
 });
 
 require __DIR__.'/settings.php';
