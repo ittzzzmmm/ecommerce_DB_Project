@@ -120,7 +120,7 @@ Route::get('wishlist', function () use ($demoProducts) {
         $all = $demoProducts()->keyBy('id');
         $wishlists = collect(session('demo_wishlist', []))
             ->filter(fn ($id) => $all->has($id))
-            ->map(fn ($id) => (object) ['id' => $id, 'product' => $all[$id]])
+             ->map(fn ($id) => $all[$id])
             ->values();
 
         return view('wishlist', compact('wishlists'));
