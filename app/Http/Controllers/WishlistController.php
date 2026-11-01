@@ -2,31 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
+/**
+ * Wish List เก็บในตาราง wishlists (user_id, product_id, UNIQUE คู่นี้) ตาม ER
+ * ⇒ ผูกกับบัญชี ไม่ใช่ browser: บัญชีใหม่เริ่มว่างเสมอ และ login เครื่องไหนก็เห็นรายการเดิม
+ */
 class WishlistController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $wishlistIds = session('demo_wishlist', []);
-        $wishlists = Product::withStats()->whereIn('id', $wishlistIds)->get();
+        // ใหม่สุดขึ้นก่อน
+        $productIds = $request->user()->wishlists()->latest('id')->pluck('product_id');
+
+        $wishlists = Product::withStats()
+            ->whereIn('id', $productIds)
+            ->get()
+            ->sortBy(fn (Product $product) => $productIds->search($product->id))
+            ->values();
 
         return view('wishlist', compact('wishlists'));
     }
 
-    public function toggle($product)
+    public function toggle(Request $request, Product $product)
     {
-        $productId = (int) $product;
-        $list = collect(session('demo_wishlist', []));
-        $added = ! $list->contains($productId);
+        $existing = $request->user()->wishlists()->where('product_id', $product->id)->first();
 
-        $list = $added 
-            ? $list->push($productId) 
-            : $list->reject(fn ($id) => $id === $productId);
+        if ($existing) {
+            $existing->delete();
+        } else {
+            $request->user()->wishlists()->create(['product_id' => $product->id]);
+        }
 
-        session(['demo_wishlist' => $list->values()->all()]);
-
-        return back()->with('status', $added ? __('Added to wish list.') : __('Removed from wish list.'));
+        return back()->with('status', $existing ? __('Removed from wish list.') : __('Added to wish list.'));
     }
 }
