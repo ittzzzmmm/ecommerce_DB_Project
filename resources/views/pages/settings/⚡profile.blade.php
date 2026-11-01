@@ -194,10 +194,6 @@ new #[Layout('layouts::shop')] #[Title('Profile settings')] class extends Compon
 
                     <!-- ข้อมูลแสดงอย่างเดียว (แก้ไม่ได้) -->
                     <div class="mt-6 grid grid-cols-[9rem_1fr] items-center gap-y-4">
-                        <span class="font-medium">{{ __('Payment Details') }}</span>
-                        <span class="text-xs text-primary">{{ auth()->user()->payment_details ?? '-' }}</span>
-
-
                         <span class="font-medium">{{ __('Member since') }}</span>
                         <span class="text-sm text-primary">{{ auth()->user()->created_at?->format('d M Y') }}</span>
                     </div>
