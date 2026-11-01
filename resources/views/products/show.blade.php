@@ -1,10 +1,12 @@
 <x-layouts::shop :title="$product->name">
-    @php
+@php
         $toUrl = fn ($path) => str_starts_with($path, 'http') ? $path : asset('storage/'.$path);
 
         // รูปหลัก (products.image) + รูปเพิ่ม (product_images.image_path)
+        $extraImages = optional($product->images)->pluck('image_path') ?? collect();
+
         $images = collect([$product->image])
-            ->merge($product->images->pluck('image_path'))
+            ->merge($extraImages)
             ->filter()
             ->map($toUrl)
             ->values();

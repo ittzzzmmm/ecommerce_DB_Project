@@ -30,7 +30,7 @@
                 {{ __('Browse products') }}
             </a>
         </section>
-    @else
+   @else
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
             @foreach ($wishlists as $product)
                 <div class="relative flex flex-col gap-2" data-test="wishlist-item">
@@ -40,7 +40,7 @@
                     <form method="POST" action="{{ route('wishlist.toggle', $product->id) }}" class="absolute top-2 right-2">
                         @csrf
                         <button type="submit" class="btn btn-circle btn-sm border-none bg-white/90 hover:bg-white shadow text-[#E5484D]"
-                                aria-label="{{ __('remove from wishlist') }}" title="{{ __('remove from wishlist') }}" data-test="remove-wishlist-button">
+                                aria-label="{{ ('remove from wishlist') }}" title="{{ ('remove from wishlist') }}" data-test="remove-wishlist-button">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
                                 <path stroke-linejoin="round" d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10Z" />
                             </svg>
@@ -55,7 +55,7 @@
 
                         <button type="submit" class="btn btn-sm btn-block rounded-lg border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white font-[Poppins] font-semibold"
                                 @disabled($product->stock < 1)>
-                            {{ $product->stock < 1 ? __('Sold out') : __('Add to Cart') }}
+                            {{ $product->stock < 1 ? ('Sold out') : ('Add to Cart') }}
                         </button>
                     </form>
                 </div>
