@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\ReviewController;
 use App\Models\Product;
 
 /*
@@ -75,7 +76,10 @@ Route::get('/', function () {
 
 Route::get('/products', function (Request $request) {
 
-    $query = Product::query()->withSum('orderItems as sold', 'quantity');
+    $query = Product::query()
+        ->withSum('orderItems as sold', 'quantity')
+        ->withAvg('reviews', 'rating')
+        ->withCount('reviews');
 
     // Search
     if ($request->filled('search')) {
@@ -109,7 +113,9 @@ Route::get('/products', function (Request $request) {
 Route::get('/products/{product}', function (Product $product) {
 
     // โหลดรูปภาพเพิ่มเติม
-    $product->load('images');
+    $product->load(['images', 'reviews.user']);
+    $product->setAttribute('reviews_avg_rating', $product->reviews()->avg('rating'));
+    $product->setAttribute('reviews_count', $product->reviews()->count());
     $product->setAttribute('sold', $product->orderItems()->sum('quantity'));
 
     // ตรวจสอบ Wishlist (ชั่วคราว)
@@ -117,6 +123,8 @@ Route::get('/products/{product}', function (Product $product) {
 
     // สินค้าที่เกี่ยวข้อง
     $related = Product::withSum('orderItems as sold', 'quantity')
+        ->withAvg('reviews', 'rating')
+        ->withCount('reviews')
         ->where('id', '!=', $product->id)
         ->inRandomOrder()
         ->take(5)
@@ -195,6 +203,13 @@ Route::middleware(['auth'])->group(function () {
         return back()->with('status', $message);
 
     })->name('wishlist.toggle');
+
+    Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])
+        ->name('products.reviews.store');
+    Route::put('/reviews/{review}', [ReviewController::class, 'update'])
+        ->name('reviews.update');
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])
+        ->name('reviews.destroy');
 
     //Cart controller
     Route::get('/cart', [CartController::class, 'index'])
