@@ -1,13 +1,4 @@
 <x-layouts::shop :title="__('Checkout')">
-    @php
-        $cart = session()->get('cart', []);
-        $subtotal = collect($cart)->sum(fn($i) => $i['price'] * $i['quantity']);
-        $discount = 0.00;
-        $shipping = 0;
-        $total = $subtotal - $discount + $shipping;
-        $user = auth()->user();
-    @endphp
-
     <!-- Breadcrumbs -->
     <div class="breadcrumbs text-sm text-gray-500 font-[Poppins] p-0 mb-4">
         <ul>
@@ -19,6 +10,23 @@
 
     <!-- Title -->
     <h1 class="text-3xl md:text-4xl font-extrabold text-[#090F3B] font-[Poppins] mb-8">{{ __('Checkout') }}</h1>
+
+    @error('cart')
+        <div role="alert" class="alert alert-error mb-6 rounded-xl">{{ $message }}</div>
+    @enderror
+
+    <form method="POST" action="{{ route('checkout.coupon') }}" class="mb-6 flex max-w-xl items-start gap-3">
+        @csrf
+        <div class="flex-1">
+            <label for="coupon_code" class="sr-only">{{ __('Coupon code') }}</label>
+            <input id="coupon_code" type="text" name="coupon_code" value="{{ old('coupon_code', $couponCode) }}"
+                   placeholder="{{ __('Coupon code') }}" class="input input-bordered w-full rounded-lg">
+            @error('coupon_code')
+                <p class="mt-1 text-sm text-error">{{ $message }}</p>
+            @enderror
+        </div>
+        <button type="submit" class="btn rounded-lg">{{ __('Apply coupon') }}</button>
+    </form>
 
     <form method="POST" action="{{ route('checkout.store') }}" class="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
         @csrf
@@ -96,16 +104,6 @@
         <!-- คอลัมน์ขวา: Order Summary & Place Order -->
         <div class="bg-white rounded-2xl shadow-[0_4px_0_0_#3B4BB0,0_8px_24px_-8px_rgba(9,15,59,0.25)] p-6 md:p-7">
             <h2 class="text-xl font-bold text-[#090F3B] mb-5 font-[Poppins]">{{ __('Order Summary') }}</h2>
-
-            <!-- Coupon Input -->
-            <div class="mb-5">
-                <input 
-                    type="text" 
-                    name="coupon_code"
-                    placeholder="Coupon code" 
-                    class="input input-sm w-full rounded-lg border border-gray-300 focus:border-[#5A6BD5] focus:outline-none text-xs placeholder:text-gray-400"
-                />
-            </div>
 
             <div class="space-y-3 text-sm">
                 <div class="flex justify-between text-[#5A6BD5]">

@@ -2,83 +2,110 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    // แสดงหน้าตะกร้าสินค้า
     public function index()
     {
-        $cart = session()->get('cart', []);
-        
-        $subtotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
+        $cart = session('cart', []);
+        $products = Product::whereIn('id', array_keys($cart))->get()->keyBy('id');
+
+        foreach ($cart as $id => &$item) {
+            if (!is_array($item)) {
+                $item = ['quantity' => (int) $item];
+            }
+            $product = $products->get($id);
+            if (!$product || (int) ($item['quantity'] ?? 0) < 1) {
+                unset($cart[$id]);
+                continue;
+            }
+
+            $item['id'] = $product->id;
+            $item['name'] = $product->name;
+            $item['price'] = (float) $product->price;
+            $item['stock'] = (int) $product->stock;
+            $item['image'] = $product->image
+                ? (str_starts_with($product->image, 'http') ? $product->image : asset('storage/' . $product->image))
+                : null;
+        }
+        unset($item);
+
+        session(['cart' => $cart]);
+
+        $itemCount = collect($cart)->sum('quantity');
+        $subtotal = collect($cart)->sum(fn ($item) => $item['price'] * $item['quantity']);
         $shipping = 0;
         $total = $subtotal + $shipping;
 
-        return view('cart.index', compact('cart', 'subtotal', 'shipping', 'total'));
+        return view('cart.index', compact('cart', 'itemCount', 'subtotal', 'shipping', 'total'));
     }
 
-    // เพิ่มสินค้าลงตะกร้า (จากปุ่ม Add to Cart ของเพื่อน)
     public function add(Request $request)
-{
-    $request->validate([
-        'product_id' => 'required|exists:products,id',
-        'quantity'   => 'required|integer|min:1',
-    ]);
+    {
+        $validated = $request->validate([
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'quantity' => ['required', 'integer', 'min:1'],
+        ]);
 
-    // ตัด with('images') ออก เปลี่ยนเป็น findOrFail ตรงๆ
-    $product = Product::findOrFail($request->product_id);
+        $product = Product::findOrFail($validated['product_id']);
+        $cart = session('cart', []);
+        $id = $product->id;
+        $existingItem = $cart[$id] ?? [];
+        $existingQuantity = is_array($existingItem)
+            ? (int) ($existingItem['quantity'] ?? 0)
+            : (int) $existingItem;
+        $newQuantity = $existingQuantity + $validated['quantity'];
 
-    // ดึง URL รูปภาพ
-    $imageUrl = $product->image 
-        ? (str_starts_with($product->image, 'http') ? $product->image : asset('storage/' . $product->image))
-        : null;
+        if ($newQuantity > $product->stock) {
+            return back()->withInput()->with('error', __('Only :stock units are currently available.', ['stock' => $product->stock]));
+        }
 
-    $cart = session()->get('cart', []);
-    $id = $product->id;
+        $imageUrl = $product->image
+            ? (str_starts_with($product->image, 'http') ? $product->image : asset('storage/' . $product->image))
+            : null;
 
-    if (isset($cart[$id])) {
-        $cart[$id]['quantity'] += (int) $request->quantity;
-    } else {
         $cart[$id] = [
-            'id'       => $product->id,
-            'name'     => $product->name,
-            'price'    => (float) $product->price,
-            'image'    => $imageUrl,
-            'quantity' => (int) $request->quantity,
+            'id' => $product->id,
+            'name' => $product->name,
+            'price' => (float) $product->price,
+            'image' => $imageUrl,
+            'quantity' => $newQuantity,
         ];
+
+        session(['cart' => $cart]);
+
+        return to_route('cart.index')->with('status', __('Added to cart. Stock and sold totals update after checkout.'));
     }
 
-    session()->put('cart', $cart);
-
-    return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าแล้ว');
-}
-
-    // ปรับจำนวน (+ / -) ในหน้า cart
-    public function update(Request $request, $id)
+    public function update(Request $request, Product $product)
     {
-        $quantity = (int) $request->input('quantity', 1);
-        $cart = session()->get('cart', []);
+        $validated = $request->validate([
+            'quantity' => ['required', 'integer', 'min:1'],
+        ]);
 
-        if (isset($cart[$id]) && $quantity > 0) {
-            $cart[$id]['quantity'] = $quantity;
-            session()->put('cart', $cart);
+        $cart = session('cart', []);
+        if (!isset($cart[$product->id])) {
+            return to_route('cart.index');
         }
 
-        return back();
+        if ($validated['quantity'] > $product->stock) {
+            return back()->with('error', __('Only :stock units are currently available.', ['stock' => $product->stock]));
+        }
+
+        $cart[$product->id]['quantity'] = $validated['quantity'];
+        session(['cart' => $cart]);
+
+        return to_route('cart.index')->with('status', __('Cart updated.'));
     }
 
-    // ลบสินค้าออกจากตะกร้า
-    public function remove($id)
+    public function remove(Product $product)
     {
-        $cart = session()->get('cart', []);
+        $cart = session('cart', []);
+        unset($cart[$product->id]);
+        session(['cart' => $cart]);
 
-        if (isset($cart[$id])) {
-            unset($cart[$id]);
-            session()->put('cart', $cart);
-        }
-
-        return back()->with('success', 'ลบสินค้าออกจากตะกร้าแล้ว');
+        return to_route('cart.index')->with('status', __('Item removed from cart.'));
     }
 }

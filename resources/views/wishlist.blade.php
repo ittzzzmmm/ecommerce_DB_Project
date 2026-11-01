@@ -32,12 +32,11 @@
         </section>
     @else
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-            @foreach ($wishlists as $wishlist)
-                @php($product = $wishlist->product)
+            @foreach ($wishlists as $product)
                 <div class="relative flex flex-col gap-2" data-test="wishlist-item">
                     <x-product-card :product="$product" class="flex-1" />
 
-                    <!-- ปุ่มเอาออกจาก Wish List (หัวใจแดงมุมขวาบน) -->
+                    <!-- ปุ่มเอาออกจาก Wish List -->
                     <form method="POST" action="{{ route('wishlist.toggle', $product->id) }}" class="absolute top-2 right-2">
                         @csrf
                         <button type="submit" class="btn btn-circle btn-sm border-none bg-white/90 hover:bg-white shadow text-[#E5484D]"
@@ -48,11 +47,12 @@
                         </button>
                     </form>
 
-                    <!-- ใส่ตะกร้า 1 ชิ้น -->
-                     <form method="POST" action="{{ Route::has('cart.add') ? route('cart.add') : '#' }}">
-                    @csrf
+                    <!-- ใส่ตะกร้า -->
+                    <form method="POST" action="{{ Route::has('cart.add') ? route('cart.add') : '#' }}">
+                        @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
                         <input type="hidden" name="quantity" value="1">
+
                         <button type="submit" class="btn btn-sm btn-block rounded-lg border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white font-[Poppins] font-semibold"
                                 @disabled($product->stock < 1)>
                             {{ $product->stock < 1 ? __('Sold out') : __('Add to Cart') }}

@@ -37,6 +37,9 @@
             </a>
         </div>
     @else
+        @error('cart')
+            <div role="alert" class="alert alert-error mb-6 rounded-xl">{{ $message }}</div>
+        @enderror
         <!-- Cart Content Layout -->
         <div class="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
             
@@ -70,6 +73,7 @@
                                     <h3 class="font-bold text-[#090F3B] truncate text-sm md:text-base">{{ $item['name'] }}</h3>
                                     <form method="POST" action="{{ route('cart.remove', $id) }}" class="mt-1">
                                         @csrf
+                                        @method('DELETE')
                                         <button type="submit" class="text-xs text-gray-400 hover:text-[#E5484D] transition">
                                             {{ __('Remove') }}
                                         </button>
@@ -86,8 +90,10 @@
                             <div class="flex items-center justify-center gap-1 font-[Roboto]">
                                 <form method="POST" action="{{ route('cart.update', $id) }}">
                                     @csrf
+                                    @method('PUT')
                                     <input type="hidden" name="quantity" value="{{ max(1, $item['quantity'] - 1) }}">
-                                    <button type="submit" class="text-[#5A6BD5] hover:text-[#090F3B] px-1 text-sm font-bold">&lt;</button>
+                                    <button type="submit" aria-label="{{ __('Decrease quantity') }}" @disabled($item['quantity'] <= 1)
+                                            class="text-[#5A6BD5] hover:text-[#090F3B] disabled:opacity-30 px-1 text-sm font-bold">−</button>
                                 </form>
 
                                 <span class="w-7 h-7 rounded-full border border-[#B9C2FF] text-[#5A6BD5] text-xs font-semibold grid place-items-center">
@@ -96,8 +102,10 @@
 
                                 <form method="POST" action="{{ route('cart.update', $id) }}">
                                     @csrf
+                                    @method('PUT')
                                     <input type="hidden" name="quantity" value="{{ $item['quantity'] + 1 }}">
-                                    <button type="submit" class="text-[#5A6BD5] hover:text-[#090F3B] px-1 text-sm font-bold">&gt;</button>
+                                    <button type="submit" aria-label="{{ __('Increase quantity') }}" @disabled($item['quantity'] >= $item['stock'])
+                                            class="text-[#5A6BD5] hover:text-[#090F3B] disabled:opacity-30 px-1 text-sm font-bold">+</button>
                                 </form>
                             </div>
 

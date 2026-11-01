@@ -10,8 +10,10 @@
     </head>
     <body class="min-h-svh flex flex-col bg-[#F4F5FB] antialiased font-[Roboto] text-black">
         @php
-            // จำนวนชิ้นในตะกร้า (โชว์เป็นตัวเลขบนปุ่ม Cart) — ใช้ได้เมื่อมี model CartItem ของ backend แล้ว
-            $cartCount = 0;
+            // Cart session entries store product details and quantity.
+            $cartCount = collect(session('cart', []))->sum(fn ($item) => is_array($item)
+                ? (int) ($item['quantity'] ?? 0)
+                : (int) $item);
             $cartUrl = Route::has('cart.index') ? route('cart.index') : '#';
             $wishlistUrl = Route::has('wishlist.index') ? route('wishlist.index') : '#';
         @endphp

@@ -13,20 +13,12 @@
 
 
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Route;
-<<<<<<< HEAD
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Models\Product;
-=======
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\CheckoutController;
->>>>>>> origin/frontend/shop-pages
 
 /*
 | ชั่วคราวฝั่ง Frontend: ใช้ "ข้อมูลสินค้าตัวอย่าง" แทน Database
@@ -213,44 +205,15 @@ Route::middleware(['auth'])->group(function () {
         ->name('cart.update');
     Route::delete('/cart/{product}', [CartController::class, 'remove'])
         ->name('cart.remove');
+    Route::get('/checkout', [CheckoutController::class, 'index'])
+        ->name('checkout.index');
+    Route::post('/checkout/coupon', [CheckoutController::class, 'applyCoupon'])
+        ->name('checkout.coupon');
     Route::post('/checkout', [CheckoutController::class, 'store'])
         ->name('checkout.store');
 
 });
 
-<<<<<<< HEAD
-=======
-// Dev Login Route (ใช้เฉพาะช่วงทดสอบระบบ)
-Route::get('/dev-login/{id?}', function ($id = 1) {
-    // 1. ค้นหา User ตาม ID หรือดึงคนแรกในระบบ
-    $user = User::find($id) ?? User::first();
-
-    // 2. ถ้าไม่มี User เลย ให้สร้าง Mock User ขึ้นมาอัตโนมัติ
-    if (!$user) {
-        $user = User::create([
-            'name' => 'Developer Tenten',
-            'email' => 'dev@example.com',
-            'password' => bcrypt('password'),
-        ]);
-    }
-
-    // 3. สั่ง Log in เข้าสู่ระบบทันที
-    Auth::login($user);
-
-    // 4. พาไปหน้า Home พร้อม Flash Message
-    return redirect('/')->with('success', "Logged in as {$user->name} (Dev Mode)");
-})->name('dev.login');
-
-// ตะกร้าสินค้า
-Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
-Route::post('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-
-// เช็คเอาต์
-Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
->>>>>>> origin/frontend/shop-pages
 
 
 require __DIR__.'/settings.php';

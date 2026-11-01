@@ -9,6 +9,7 @@ class HomeController extends Controller
 {
     public function index(){
         $products = Product::withAvg('reviews', 'rating')
+                            ->withSum('orderItems as sold', 'quantity')
                             ->orderByDesc('reviews_avg_rating')
                             ->get();
 

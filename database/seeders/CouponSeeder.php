@@ -9,7 +9,7 @@ class CouponSeeder extends Seeder
 {
     public function run(): void
     {
-        Coupon::create([
+        Coupon::firstOrCreate(['code' => 'WELCOME10'], [
             'code' => 'WELCOME10',
             'discount_percent' => 10.00,
             'start_at' => now(),
@@ -19,7 +19,7 @@ class CouponSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        Coupon::create([
+        Coupon::firstOrCreate(['code' => 'SALE20'], [
             'code' => 'SALE20',
             'discount_percent' => 20.00,
             'start_at' => now(),
