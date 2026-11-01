@@ -79,13 +79,13 @@
             </div>
 
           <div class="flex items-center justify-end mt-4">
-                <button type="submit" class="btn btn-primary btn-block rounded-lg font-[Poppins] font-semibold" data-test="register-user-button">
+                <button type="submit" class="btn btn-primary btn-block rounded-lg font-semibold" data-test="register-user-button">
                     {{ __('Sign up') }}
                 </button>
             </div>
         </form>
 
-        <div class="space-x-1 rtl:space-x-reverse text-center text-sm font-[Poppins]">
+        <div class="space-x-1 rtl:space-x-reverse text-center text-sm">
             <span>{{ __('Have an account?') }}</span>
             <a href="{{ route('login') }}" class="link link-primary link-hover" wire:navigate>{{ __('Login') }}</a>
         </div>

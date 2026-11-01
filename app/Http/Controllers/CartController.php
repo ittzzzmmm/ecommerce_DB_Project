@@ -87,15 +87,26 @@ class CartController extends Controller
 
         $cart = session('cart', []);
         if (!isset($cart[$product->id])) {
-            return to_route('cart.index');
+            return $request->expectsJson()
+                ? response()->json(['message' => __('This item is no longer in your cart.')], 404)
+                : to_route('cart.index');
         }
 
         if ($validated['quantity'] > $product->stock) {
-            return back()->with('error', __('Only :stock units are currently available.', ['stock' => $product->stock]));
+            $message = __('Only :stock units are currently available.', ['stock' => $product->stock]);
+
+            return $request->expectsJson()
+                ? response()->json(['message' => $message], 422)
+                : back()->with('error', $message);
         }
 
         $cart[$product->id]['quantity'] = $validated['quantity'];
         session(['cart' => $cart]);
+
+        // ปุ่ม + / − ในหน้า Cart เรียกแบบ fetch → ส่งตัวเลขใหม่กลับไปอัปเดตหน้าโดยไม่รีโหลด
+        if ($request->expectsJson()) {
+            return response()->json($this->summary($cart, $product));
+        }
 
         return to_route('cart.index')->with('status', __('Cart updated.'));
     }
@@ -107,5 +118,28 @@ class CartController extends Controller
         session(['cart' => $cart]);
 
         return to_route('cart.index')->with('status', __('Item removed from cart.'));
+    }
+
+    /**
+     * ตัวเลขสรุปของตะกร้า (ใช้ตอบกลับปุ่ม + / −)
+     */
+    private function summary(array $cart, Product $product): array
+    {
+        $item = $cart[$product->id];
+        $quantity = (int) $item['quantity'];
+        $price = (float) ($item['price'] ?? $product->price);
+        $itemCount = collect($cart)->sum(fn ($row) => (int) ($row['quantity'] ?? 0));
+        $subtotal = collect($cart)->sum(fn ($row) => (float) ($row['price'] ?? 0) * (int) ($row['quantity'] ?? 0));
+
+        return [
+            'quantity' => $quantity,
+            'stock' => (int) $product->stock,
+            'line_total' => number_format($price * $quantity, 2),
+            'item_count' => $itemCount,
+            'item_label' => $itemCount.' '.\Illuminate\Support\Str::plural('item', $itemCount),
+            'subtotal' => number_format($subtotal, 2),
+            'total' => number_format($subtotal, 2),
+            'message' => __('Cart updated.'),
+        ];
     }
 }

@@ -15,6 +15,7 @@ new #[Layout('layouts::shop')] #[Title('Profile settings')] class extends Compon
 
     public string $name = '';
     public string $email = '';
+    public string $address = '';
 
     /**
      * Mount the component.
@@ -23,6 +24,7 @@ new #[Layout('layouts::shop')] #[Title('Profile settings')] class extends Compon
     {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
+        $this->address = Auth::user()->address ?? '';
     }
 
     /**
@@ -32,7 +34,12 @@ new #[Layout('layouts::shop')] #[Title('Profile settings')] class extends Compon
     {
         $user = Auth::user();
 
-        $validated = $this->validate($this->profileRules($user->id));
+        $validated = $this->validate([
+            ...$this->profileRules($user->id),
+            // ที่อยู่เริ่มต้น (ใช้เติมให้อัตโนมัติตอน Checkout) ไม่บังคับ
+            'address' => ['nullable', 'string', 'max:2000'],
+        ]);
+        $validated['address'] = filled($validated['address'] ?? null) ? trim($validated['address']) : null;
 
         $user->fill($validated);
 
@@ -98,6 +105,7 @@ new #[Layout('layouts::shop')] #[Title('Profile settings')] class extends Compon
             <a href="{{ route('security.edit') }}" class="pl-1 text-primary hover:underline" wire:navigate>{{ __('change password') }}</a>
 
             <p class="font-medium mt-4">{{ __('My Purchase') }}</p>
+            <a href="{{ route('orders.index') }}" class="pl-1 text-primary hover:underline" data-test="my-purchase-link">{{ __('order history') }}</a>
         </nav>
     </aside>
 
@@ -164,13 +172,31 @@ new #[Layout('layouts::shop')] #[Title('Profile settings')] class extends Compon
                         </div>
                     </div>
 
+                    <!-- Address: ที่อยู่เริ่มต้นสำหรับจัดส่ง/ออกบิล (users.address) -->
+                    <div class="grid sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3">
+                        <label for="address" class="font-medium sm:pt-1">{{ __('Address') }}</label>
+                        <div>
+                            <textarea
+                                id="address"
+                                wire:model="address"
+                                rows="3"
+                                autocomplete="street-address"
+                                placeholder="{{ __('House no, street, district, province, postal code, phone') }}"
+                                class="textarea w-full rounded-md text-sm leading-relaxed @error('address') textarea-error @enderror"
+                                data-test="profile-address"
+                            ></textarea>
+                            @error('address')
+                                <p class="text-error text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-xs text-gray-500">{{ __('Used for shipping and billing. It will be filled in for you at checkout.') }}</p>
+                        </div>
+                    </div>
+
                     <!-- ข้อมูลแสดงอย่างเดียว (แก้ไม่ได้) -->
                     <div class="mt-6 grid grid-cols-[9rem_1fr] items-center gap-y-4">
                         <span class="font-medium">{{ __('Payment Details') }}</span>
                         <span class="text-xs text-primary">{{ auth()->user()->payment_details ?? '-' }}</span>
 
-                        <span class="font-medium">{{ __('Billing Address') }}</span>
-                        <span class="text-xs text-primary">{{ auth()->user()->billing_address ?? '-' }}</span>
 
                         <span class="font-medium">{{ __('Member since') }}</span>
                         <span class="text-sm text-primary">{{ auth()->user()->created_at?->format('d M Y') }}</span>

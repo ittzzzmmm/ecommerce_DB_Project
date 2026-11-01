@@ -9,7 +9,7 @@
 
             <div class="relative grid md:grid-cols-2 gap-8 items-center px-6 py-10 md:px-14 md:py-14">
                 <div>
-                    <span class="inline-block px-3 py-1 rounded-full bg-white/15 text-xs font-[Poppins] tracking-wide">
+                    <span class="inline-block px-3 py-1 rounded-full bg-white/15 text-xs tracking-wide">
                         {{ __('Welcome to CPE10 Shop') }}
                     </span>
                     <h1 class="mt-4 text-3xl md:text-5xl font-bold leading-tight">
@@ -19,7 +19,7 @@
                     <p class="mt-4 text-white/80 max-w-md">
                         {{ __('Browse our products, save favorites to your wish list, read real reviews and get extra savings with discount coupons.') }}
                     </p>
-                    <div class="mt-8 flex flex-wrap gap-3 font-[Poppins]">
+                    <div class="mt-8 flex flex-wrap gap-3">
                         <a href="{{ route('products.index') }}" class="btn rounded-full border-none bg-white text-[#090F3B] hover:bg-[#EEF0FB] px-7 font-semibold">
                             {{ __('Shop now') }}
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
@@ -36,7 +36,7 @@
                 @if ($featured = $products->first())
                     <div class="hidden md:block justify-self-end w-64 rotate-2 hover:rotate-0 transition duration-300">
                         <x-product-card :product="$featured" class="shadow-2xl" />
-                        <p class="mt-3 text-center text-sm text-white/80 font-[Poppins]">{{ __('Top rated') }} ★</p>
+                        <p class="mt-3 text-center text-sm text-white/80">{{ __('Top rated') }} ★</p>
                     </div>
                 @endif
             </div>
@@ -67,7 +67,7 @@
         <section>
             <div class="flex items-end justify-between gap-4 mb-6">
                 <h2 class="text-2xl md:text-4xl font-bold text-[#1F2937]">{{ __('Recommended Products') }}</h2>
-                <a href="{{ route('products.index') }}" class="link link-primary link-hover font-[Poppins] text-sm shrink-0">{{ __('View all') }} &rarr;</a>
+                <a href="{{ route('products.index') }}" class="link link-primary link-hover text-sm shrink-0">{{ __('View all') }} &rarr;</a>
             </div>
 
             @if ($products->isEmpty())
@@ -87,7 +87,7 @@
             <section>
                 <div class="flex items-end justify-between gap-4 mb-6">
                     <h2 class="text-2xl md:text-3xl font-bold text-[#1F2937]">{{ __('New Arrivals') }}</h2>
-                    <a href="{{ route('products.index', ['sort' => 'newest']) }}" class="link link-primary link-hover font-[Poppins] text-sm shrink-0">{{ __('View all') }} &rarr;</a>
+                    <a href="{{ route('products.index', ['sort' => 'newest']) }}" class="link link-primary link-hover text-sm shrink-0">{{ __('View all') }} &rarr;</a>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
                     @foreach ($newArrivals as $product)
@@ -100,13 +100,13 @@
         <!-- ===== แบนเนอร์คูปอง ===== -->
         <section class="rounded-3xl bg-white shadow-sm border-2 border-dashed border-primary/50 px-6 py-8 md:px-12 flex flex-col md:flex-row items-center gap-6 justify-between">
             <div class="flex items-center gap-5">
-                <div class="shrink-0 w-16 h-16 rounded-2xl bg-primary/10 text-primary grid place-items-center text-2xl font-bold font-[Poppins]">%</div>
+                <div class="shrink-0 w-16 h-16 rounded-2xl bg-primary/10 text-primary grid place-items-center text-2xl font-bold">%</div>
                 <div>
                     <h2 class="text-xl md:text-2xl font-bold text-[#090F3B]">{{ __('Got a discount coupon?') }}</h2>
                     <p class="text-gray-600 mt-1">{{ __('Apply your code at checkout and the discount is calculated for you.') }}</p>
                 </div>
             </div>
-            <a href="{{ auth()->check() ? route('products.index') : route('register') }}" class="btn btn-primary rounded-full px-8 font-[Poppins] font-semibold shrink-0">
+            <a href="{{ auth()->check() ? route('products.index') : route('register') }}" class="btn btn-primary rounded-full px-8 font-semibold shrink-0">
                 {{ auth()->check() ? __('Start shopping') : __('Sign up to shop') }}
             </a>
         </section>

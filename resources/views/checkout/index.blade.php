@@ -1,6 +1,6 @@
 <x-layouts::shop :title="__('Checkout')">
     <!-- Breadcrumbs -->
-    <div class="breadcrumbs text-sm text-gray-500 font-[Poppins] p-0 mb-4">
+    <div class="breadcrumbs text-sm text-gray-500 p-0 mb-4">
         <ul>
             <li><a href="{{ route('home') }}">{{ __('Home') }}</a></li>
             <li><a href="{{ route('cart.index') }}">{{ __('Cart') }}</a></li>
@@ -9,7 +9,7 @@
     </div>
 
     <!-- Title -->
-    <h1 class="text-3xl md:text-4xl font-extrabold text-[#090F3B] font-[Poppins] mb-8">{{ __('Checkout') }}</h1>
+    <h1 class="text-3xl md:text-4xl font-extrabold text-[#090F3B] mb-8">{{ __('Checkout') }}</h1>
 
     @error('cart')
         <div role="alert" class="alert alert-error mb-6 rounded-xl">{{ $message }}</div>
@@ -36,7 +36,7 @@
             
             <!-- Shipping Address Card -->
             <div class="bg-white rounded-2xl shadow-[0_4px_0_0_#3B4BB0,0_8px_24px_-8px_rgba(9,15,59,0.25)] p-6 md:p-8">
-                <h2 class="text-lg font-bold text-[#090F3B] mb-5 font-[Poppins]">{{ __('Shipping Address') }}</h2>
+                <h2 class="text-lg font-bold text-[#090F3B] mb-5">{{ __('Shipping Address') }}</h2>
 
                 <div class="grid sm:grid-cols-2 gap-4 mb-4 text-sm">
                     <div>
@@ -51,29 +51,44 @@
 
                 <div>
                     <label for="address" class="text-xs text-[#5A6BD5] font-medium block mb-2">{{ __('Address') }}</label>
-                    <textarea 
-                        id="address" 
-                        name="address" 
-                        rows="3" 
+                    <textarea
+                        id="address"
+                        name="address"
+                        rows="3"
                         required
+                        autocomplete="street-address"
                         placeholder="House no, street, district, postal code, phone number"
-                        class="textarea w-full rounded-xl border border-gray-300 focus:border-[#5A6BD5] focus:ring-1 focus:ring-[#5A6BD5] text-sm text-gray-700 placeholder:text-gray-400 leading-relaxed">{{ old('address', $user->address ?? '') }}</textarea>
+                        class="textarea w-full rounded-xl border border-gray-300 focus:border-[#5A6BD5] focus:ring-1 focus:ring-[#5A6BD5] text-sm text-gray-700 placeholder:text-gray-400 leading-relaxed">{{ old('address', $defaultAddress ?? '') }}</textarea>
                     @error('address')
                         <p class="text-xs text-[#E5484D] mt-1">{{ $message }}</p>
                     @enderror
+                    @if ($addressSource)
+                        <p class="text-xs text-gray-500 mt-2 leading-relaxed" data-test="address-prefilled">
+                            {{ $addressSource === 'profile'
+                                ? __('Filled in from your profile. Edits here apply to this order only.')
+                                : __('Filled in from your last order. Edits here apply to this order only.') }}
+                        </p>
+                    @endif
+
+                    <!-- ตั้งเป็นที่อยู่เริ่มต้นในโปรไฟล์ (ติ๊กไว้ให้ถ้ายังไม่เคยตั้ง) -->
+                    <label class="mt-3 flex items-center gap-2 text-sm text-gray-700 cursor-pointer w-fit">
+                        <input type="checkbox" name="save_as_default" value="1" class="checkbox checkbox-sm checkbox-primary"
+                               @checked(old('save_as_default', $addressSource !== 'profile')) data-test="save-as-default">
+                        {{ __('Save as default address') }}
+                    </label>
                 </div>
             </div>
 
             <!-- Order Items Card -->
             <div class="bg-white rounded-2xl shadow-[0_4px_0_0_#3B4BB0,0_8px_24px_-8px_rgba(9,15,59,0.25)] p-6 md:p-8">
                 <div class="flex items-center justify-between mb-5">
-                    <h2 class="text-lg font-bold text-[#090F3B] font-[Poppins]">{{ __('Order Items') }}</h2>
-                    <a href="{{ route('cart.index') }}" class="text-xs font-semibold text-[#5A6BD5] hover:underline font-[Poppins]">
+                    <h2 class="text-lg font-bold text-[#090F3B]">{{ __('Order Items') }} <span class="text-sm font-medium text-[#5A6BD5]">({{ collect($cart)->sum('quantity') }})</span></h2>
+                    <a href="{{ route('cart.index') }}" class="text-xs font-semibold text-[#5A6BD5] hover:underline">
                         {{ __('Edit cart') }}
                     </a>
                 </div>
 
-                <div class="divide-y divide-gray-100">
+                <div class="divide-y divide-gray-100 max-h-[26rem] overflow-y-auto overscroll-contain pr-2 -mr-2" data-test="checkout-items">
                     @foreach ($cart as $item)
                         <div class="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
                             <div class="flex items-center gap-4 min-w-0">
@@ -88,11 +103,11 @@
                                 </div>
                                 <div class="min-w-0">
                                     <h3 class="font-bold text-[#090F3B] text-sm truncate">{{ $item['name'] }}</h3>
-                                    <span class="text-xs text-[#5A6BD5]">{{ number_format($item['price']) }} x {{ $item['quantity'] }}</span>
+                                    <span class="text-xs text-[#5A6BD5]">{{ number_format($item['price'], 2) }} x {{ $item['quantity'] }}</span>
                                 </div>
                             </div>
                             <span class="font-bold text-[#090F3B] text-sm shrink-0">
-                                {{ number_format($item['price'] * $item['quantity']) }}
+                                {{ number_format($item['price'] * $item['quantity'], 2) }}
                             </span>
                         </div>
                     @endforeach
@@ -102,13 +117,13 @@
         </div>
 
         <!-- คอลัมน์ขวา: Order Summary & Place Order -->
-        <div class="bg-white rounded-2xl shadow-[0_4px_0_0_#3B4BB0,0_8px_24px_-8px_rgba(9,15,59,0.25)] p-6 md:p-7">
-            <h2 class="text-xl font-bold text-[#090F3B] mb-5 font-[Poppins]">{{ __('Order Summary') }}</h2>
+        <div class="lg:sticky lg:top-28 bg-white rounded-2xl shadow-[0_4px_0_0_#3B4BB0,0_8px_24px_-8px_rgba(9,15,59,0.25)] p-6 md:p-7">
+            <h2 class="text-xl font-bold text-[#090F3B] mb-5">{{ __('Order Summary') }}</h2>
 
             <div class="space-y-3 text-sm">
                 <div class="flex justify-between text-[#5A6BD5]">
                     <span>{{ __('Subtotal') }}</span>
-                    <span class="font-semibold text-gray-800">{{ number_format($subtotal) }}</span>
+                    <span class="font-semibold text-gray-800">{{ number_format($subtotal, 2) }}</span>
                 </div>
                 <div class="flex justify-between text-[#5A6BD5]">
                     <span>{{ __('Discount') }}</span>
@@ -116,7 +131,7 @@
                 </div>
                 <div class="flex justify-between text-[#5A6BD5]">
                     <span>{{ __('Shipping') }}</span>
-                    <span class="font-semibold text-gray-800">{{ $shipping == 0 ? __('Free') : number_format($shipping) }}</span>
+                    <span class="font-semibold text-gray-800">{{ $shipping == 0 ? __('Free') : number_format($shipping, 2) }}</span>
                 </div>
             </div>
 
@@ -124,10 +139,10 @@
 
             <div class="flex items-baseline justify-between mb-6">
                 <span class="font-bold text-[#090F3B]">{{ __('Total') }}</span>
-                <span class="text-2xl font-black text-[#E5484D]">{{ number_format($total) }}</span>
+                <span class="text-2xl font-black text-[#E5484D]">{{ number_format($total, 2) }}</span>
             </div>
 
-            <button type="submit" class="btn w-full rounded-xl border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white font-[Poppins] font-semibold py-3 shadow-md">
+            <button type="submit" class="btn w-full rounded-xl border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white font-semibold py-3 shadow-md">
                 {{ __('Place Order') }}
             </button>
 

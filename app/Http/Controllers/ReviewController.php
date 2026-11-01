@@ -33,6 +33,9 @@ class ReviewController extends Controller
         $validated = $request->validate([
             'rating' => 'required|integer|between:1,5',
             'comment' => 'required|string|max:1000',
+        ], [
+            'rating.required' => __('Please select a rating from 1 to 5 stars.'),
+            'rating.between' => __('Please select a rating from 1 to 5 stars.'),
         ]);
 
         // 4. บันทึกรีวิว (คะแนนเฉลี่ย/จำนวนรีวิว คำนวณสดตอนแสดงผล ไม่ต้องอัปเดตตาราง products)

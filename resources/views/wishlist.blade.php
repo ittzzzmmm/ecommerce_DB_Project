@@ -2,7 +2,7 @@
     {{-- ตัวแปรจาก backend: $wishlists (แต่ละอันมี id, product) --}}
 
     <!-- Breadcrumb -->
-    <div class="breadcrumbs text-sm text-gray-500 font-[Poppins] p-0 mb-6">
+    <div class="breadcrumbs text-sm text-gray-500 p-0 mb-6">
         <ul>
             <li><a href="{{ route('home') }}">{{ __('Home') }}</a></li>
             <li>{{ __('Wish List') }}</li>
@@ -26,7 +26,7 @@
             </div>
             <h2 class="mt-5 text-xl font-bold text-[#090F3B]">{{ __('Your wish list is empty') }}</h2>
             <p class="mt-1 text-gray-500">{{ __('Tap the heart on any product to save it here.') }}</p>
-            <a href="{{ route('products.index') }}" class="btn mt-6 rounded-xl border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white font-[Poppins] font-semibold px-8">
+            <a href="{{ route('products.index') }}" class="btn mt-6 rounded-xl border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white font-semibold px-8">
                 {{ __('Browse products') }}
             </a>
         </section>
@@ -53,7 +53,7 @@
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
                         <input type="hidden" name="quantity" value="1">
 
-                        <button type="submit" class="btn btn-sm btn-block rounded-lg border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white font-[Poppins] font-semibold"
+                        <button type="submit" class="btn btn-sm btn-block rounded-lg border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white font-semibold"
                                 @disabled($product->stock < 1)>
                             {{ $product->stock < 1 ? ('Sold out') : ('Add to Cart') }}
                         </button>

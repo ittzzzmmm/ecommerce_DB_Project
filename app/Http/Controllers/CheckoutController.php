@@ -55,7 +55,15 @@ class CheckoutController extends Controller
         $total = max(0, $subtotal - $discount + $shipping);
         $user = auth()->user();
 
-        return view('checkout.index', compact('cart', 'subtotal', 'discount', 'shipping', 'total', 'user', 'couponCode'));
+        // เติมที่อยู่ให้อัตโนมัติ: ที่อยู่เริ่มต้นในโปรไฟล์ (users.address) → ถ้าไม่มี ใช้ที่อยู่ของออเดอร์ล่าสุด
+        // ผู้ใช้แก้ได้อิสระสำหรับออเดอร์นี้ (บันทึกใน orders.shipping_address) และเลือกได้ว่าจะตั้งเป็นที่อยู่เริ่มต้นไหม
+        $profileAddress = $user->address ?? '';
+        $defaultAddress = $profileAddress !== ''
+            ? $profileAddress
+            : ($user->orders()->latest('id')->value('shipping_address') ?? '');
+        $addressSource = $profileAddress !== '' ? 'profile' : ($defaultAddress !== '' ? 'last_order' : null);
+
+        return view('checkout.index', compact('cart', 'subtotal', 'discount', 'shipping', 'total', 'user', 'couponCode', 'defaultAddress', 'addressSource'));
     }
 
     public function applyCoupon(Request $request)
@@ -80,7 +88,9 @@ class CheckoutController extends Controller
     {
         $validated = $request->validate([
             'address' => ['required', 'string', 'max:2000'],
+            'save_as_default' => ['nullable', 'boolean'],
         ]);
+        $validated['address'] = trim($validated['address']);
 
         $cart = session('cart', []);
         if (empty($cart)) {
@@ -161,9 +171,14 @@ class CheckoutController extends Controller
             return $order;
         });
 
+        // ติ๊ก "Save as default address" → อัปเดตที่อยู่เริ่มต้นในโปรไฟล์ด้วย
+        if ($request->boolean('save_as_default')) {
+            $request->user()->update(['address' => $validated['address']]);
+        }
+
         session()->forget(['cart', 'coupon_code']);
 
-        return to_route('home')->with('status', __('Order #:number placed successfully.', ['number' => $order->id]));
+        return to_route('orders.show', $order)->with('status', __('Order #:number placed successfully.', ['number' => $order->id]));
     }
 
     private function couponIsAvailable(Coupon $coupon, int $userId): bool

@@ -3,12 +3,8 @@
     <head>
         @include('partials.head')
 
-        <!-- ฟอนต์ตาม Figma: Roboto (เนื้อหา), Poppins (ปุ่ม/เมนู) -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     </head>
-    <body class="min-h-svh flex flex-col bg-[#F4F5FB] antialiased font-[Roboto] text-black">
+    <body class="min-h-svh flex flex-col bg-[#F4F5FB] antialiased font-sans leading-normal text-black">
         @php
             // Cart session entries store product details and quantity.
             $cartCount = collect(session('cart', []))->sum(fn ($item) => is_array($item)
@@ -26,11 +22,11 @@
                 <!-- โลโก้ -->
                 <a href="{{ route('home') }}" class="shrink-0 flex items-center gap-2">
                     <img src="{{ asset('images/cpe-logo.jpeg') }}" alt="CPE" class="h-10 w-auto">
-                    <span class="hidden lg:inline font-[Poppins] font-bold text-lg text-[#090F3B]">CPE10</span>
+                    <span class="hidden lg:inline font-bold text-lg text-[#090F3B]">CPE10</span>
                 </a>
 
                 <!-- เมนูหลัก -->
-                <nav class="hidden md:flex items-center gap-1 font-[Poppins] text-sm shrink-0">
+                <nav class="hidden md:flex items-center gap-1 text-sm shrink-0">
                     <a href="{{ route('home') }}"
                        class="px-3 py-2 rounded-full transition {{ request()->routeIs('home') ? 'bg-[#090F3B] text-white' : 'text-[#090F3B] hover:bg-[#EEF0FB]' }}">
                         {{ __('Home') }}
@@ -84,14 +80,14 @@
                                     <path stroke-linecap="round" d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6" />
                                 </svg>
                             </div>
-                            <ul tabindex="0" class="dropdown-content menu bg-white rounded-box z-40 mt-2 w-56 p-2 shadow-lg font-[Poppins]">
+                            <ul tabindex="0" class="dropdown-content menu bg-white rounded-box z-40 mt-2 w-56 p-2 shadow-lg">
                                 <li class="menu-title">
                                     <span class="text-black truncate">{{ auth()->user()->name }}</span>
                                     <span class="text-xs font-normal text-gray-500 truncate">{{ auth()->user()->email }}</span>
                                 </li>
-                                <li><a href="{{ route('profile.edit') }}">{{ __('My Account') }}</a></li>
-                                <li><a href="{{ $wishlistUrl }}">{{ __('Wish List') }}</a></li>
-                                <li><a href="{{ $cartUrl }}">{{ __('Cart') }}</a></li>
+                                {{-- Wish List / Cart มีปุ่มกลมใน navbar อยู่แล้ว เมนูนี้เหลือแค่เรื่องบัญชี --}}
+                                <li><a href="{{ route('profile.edit') }}" data-test="menu-my-profile">{{ __('My Profile') }}</a></li>
+                                <li><a href="{{ route('orders.index') }}" data-test="menu-my-purchase">{{ __('My Purchase') }}</a></li>
                                 <li class="border-t border-gray-100 mt-1 pt-1">
                                     <button type="submit" form="logout-form" class="text-[#E5484D]" data-test="logout-button">{{ __('Logout') }}</button>
                                 </li>
@@ -99,11 +95,11 @@
                         </div>
                     @else
                         <!-- ยังไม่ล็อกอิน: ปุ่ม Log in / Sign up -->
-                        <a href="{{ route('login') }}" class="btn btn-ghost rounded-lg font-[Poppins] font-semibold text-[#090F3B] hidden sm:inline-flex">
+                        <a href="{{ route('login') }}" class="btn btn-ghost rounded-lg font-semibold text-[#090F3B] hidden sm:inline-flex">
                             {{ __('Log in') }}
                         </a>
                         @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="btn rounded-lg border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white font-[Poppins] font-semibold">
+                            <a href="{{ route('register') }}" class="btn rounded-lg border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white font-semibold">
                                 {{ __('Sign up') }}
                             </a>
                         @endif
@@ -112,7 +108,7 @@
             </div>
 
             <!-- เมนูหลักบนจอเล็ก -->
-            <nav class="md:hidden flex items-center gap-1 px-4 pb-3 font-[Poppins] text-sm">
+            <nav class="md:hidden flex items-center gap-1 px-4 pb-3 text-sm">
                 <a href="{{ route('home') }}" class="px-3 py-1.5 rounded-full {{ request()->routeIs('home') ? 'bg-[#090F3B] text-white' : 'text-[#090F3B] bg-[#EEF0FB]' }}">{{ __('Home') }}</a>
                 <a href="{{ route('products.index') }}" class="px-3 py-1.5 rounded-full {{ request()->routeIs('products.*') ? 'bg-[#090F3B] text-white' : 'text-[#090F3B] bg-[#EEF0FB]' }}">{{ __('Products') }}</a>
                 @guest
@@ -173,14 +169,14 @@
                 <div class="lg:col-span-2">
                     <a href="{{ route('home') }}" class="inline-flex items-center gap-3">
                         <img src="{{ asset('images/cpe-logo.jpeg') }}" alt="CPE" class="h-10 w-auto rounded bg-white p-1">
-                        <span class="font-[Poppins] font-bold text-xl text-white">CPE10 Shop</span>
+                        <span class="font-bold text-xl text-white">CPE10 Shop</span>
                     </a>
                     <p class="mt-3 text-sm max-w-sm">
                         {{ __('Quality products, honest reviews, and great deals with discount coupons.') }}
                     </p>
                 </div>
                 <div>
-                    <h3 class="font-[Poppins] font-semibold text-white mb-3">{{ __('Shop') }}</h3>
+                    <h3 class="font-semibold text-white mb-3">{{ __('Shop') }}</h3>
                     <ul class="space-y-2 text-sm">
                         <li><a href="{{ route('home') }}" class="hover:text-white">{{ __('Home') }}</a></li>
                         <li><a href="{{ route('products.index') }}" class="hover:text-white">{{ __('All Products') }}</a></li>
@@ -188,7 +184,7 @@
                     </ul>
                 </div>
                 <div>
-                    <h3 class="font-[Poppins] font-semibold text-white mb-3">{{ __('Account') }}</h3>
+                    <h3 class="font-semibold text-white mb-3">{{ __('Account') }}</h3>
                     <ul class="space-y-2 text-sm">
                         @auth
                             <li><a href="{{ route('profile.edit') }}" class="hover:text-white">{{ __('My Account') }}</a></li>

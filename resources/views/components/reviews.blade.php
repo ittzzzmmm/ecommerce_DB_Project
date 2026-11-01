@@ -1,4 +1,4 @@
-<div class="bg-white rounded-2xl shadow-[0_4px_0_0_#3B4BB0,0_8px_24px_-8px_rgba(9,15,59,0.25)] p-6 md:p-10 font-[Poppins]">
+<div class="bg-white rounded-2xl shadow-[0_4px_0_0_#3B4BB0,0_8px_24px_-8px_rgba(9,15,59,0.25)] p-6 md:p-10">
     
     <!-- ส่วนหัวข้อ & สรุปคะแนน -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-100">
@@ -60,13 +60,14 @@
                 <!-- เลือกดาว 1-5 (DaisyUI Rating) -->
                 <div>
                     <label class="block text-xs font-semibold text-[#5A6BD5] uppercase mb-1">{{ __('Rating') }}</label>
-                    <div class="rating rating-md gap-1">
-                        <input type="radio" name="rating" value="1" class="mask mask-star-2 bg-[#F5C518]" required />
-                        <input type="radio" name="rating" value="2" class="mask mask-star-2 bg-[#F5C518]" />
-                        <input type="radio" name="rating" value="3" class="mask mask-star-2 bg-[#F5C518]" />
-                        <input type="radio" name="rating" value="4" class="mask mask-star-2 bg-[#F5C518]" />
-                        <input type="radio" name="rating" value="5" class="mask mask-star-2 bg-[#F5C518]" checked />
+                    {{-- เริ่มที่ 0 ดาว (ยังไม่เลือก): required = เบราว์เซอร์ไม่ให้ส่งจนกว่าจะกดดาว, server ตรวจซ้ำ 1–5 --}}
+                    <div class="rating rating-md gap-1" role="radiogroup" aria-label="{{ __('Rating') }}">
+                        @for ($s = 1; $s <= 5; $s++)
+                            <input type="radio" name="rating" value="{{ $s }}" class="mask mask-star-2 bg-[#F5C518]"
+                                   aria-label="{{ $s }} {{ Str::plural('star', $s) }}" @checked((int) old('rating') === $s) required />
+                        @endfor
                     </div>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('Tap a star to rate from 1 to 5.') }}</p>
                     @error('rating')
                         <p class="text-xs text-[#E5484D] mt-1">{{ $message }}</p>
                     @enderror

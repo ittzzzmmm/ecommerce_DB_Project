@@ -10,10 +10,10 @@
 @endphp
 
 <a href="{{ route('products.show', $product->id) }}"
-   {{ $attributes->merge(['class' => 'group flex flex-col bg-white text-black rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-200']) }}>
+   {{ $attributes->merge(['class' => 'group flex flex-col bg-white text-black rounded-xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-200']) }}>
     <!-- รูปสินค้า -->
-    <div class="relative aspect-square border border-gray-800/80 bg-white grid place-items-center overflow-hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-14 h-14 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+    <div class="relative aspect-square bg-[#F8F9FD] border-b border-slate-100 grid place-items-center overflow-hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-14 h-14 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
             <rect x="3" y="3" width="18" height="18" rx="2" />
             <circle cx="8.5" cy="8.5" r="1.5" />
             <path d="m21 15-5-5L5 21" />

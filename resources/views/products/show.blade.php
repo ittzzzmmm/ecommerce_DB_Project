@@ -20,7 +20,7 @@
     @endphp
 
     <!-- Breadcrumb -->
-    <div class="breadcrumbs text-sm text-gray-500 font-[Poppins] p-0 mb-6">
+    <div class="breadcrumbs text-sm text-gray-500 p-0 mb-6">
         <ul>
             <li><a href="{{ route('home') }}">{{ __('Home') }}</a></li>
             <li><a href="{{ route('products.index') }}">{{ __('Products') }}</a></li>
@@ -33,8 +33,8 @@
 
         <!-- รูปสินค้า + รูปย่อย -->
         <div>
-            <div class="relative aspect-square border border-gray-800 rounded-sm bg-white grid place-items-center overflow-hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+            <div class="relative aspect-square border border-slate-100 rounded-xl bg-[#F8F9FD] shadow-sm grid place-items-center overflow-hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                     <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" />
                 </svg>
                 @if ($images->isNotEmpty())
@@ -89,7 +89,7 @@
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
 
                 <!-- Quantity  <  1  >   IN STOCK -->
-                <div class="flex flex-wrap items-center gap-4 font-[Roboto]">
+                <div class="flex flex-wrap items-center gap-4">
                     <span class="text-[#8C96D9]">{{ __('Quantity') }}</span>
                     <div class="flex items-center gap-1">
                         <button type="button" onclick="stepQty(-1)" class="btn btn-sm btn-ghost btn-square text-[#5A6BD5] text-lg" aria-label="{{ __('Decrease') }}" @disabled(! $inStock)>&lt;</button>
@@ -108,10 +108,10 @@
                     <p class="text-error text-sm -mt-4">{{ $message }}</p>
                 @enderror
 
-                <!-- ปุ่ม Add to Cart -->
+                <!-- ปุ่ม Add to Cart + Wish List (ขนาดเท่ากัน วางข้างกัน) -->
                 <div class="flex flex-wrap items-center gap-3">
                     @auth
-                        <button type="submit" class="btn btn-lg rounded-xl border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white font-[Poppins] font-semibold px-10"
+                        <button type="submit" class="btn btn-lg rounded-xl flex-1 sm:flex-none sm:w-60 min-w-[11rem] px-6 font-semibold transition duration-200 hover:-translate-y-0.5 border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white"
                                 data-test="add-to-cart-button" @disabled(! $inStock || ! $canAddToCart)>
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h2l2.4 10.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.76L20 8H6.2" />
@@ -119,36 +119,41 @@
                             </svg>
                             {{ __('Add to Cart') }}
                         </button>
+
+                        {{-- ปุ่มนี้ส่ง "wishlist-form" ด้านล่าง (form ซ้อนใน form ไม่ได้ เลยใช้ attribute form=) --}}
+                        <button type="submit" form="wishlist-form" data-test="wishlist-button" @disabled(! $canWishlist) aria-pressed="{{ $inWishlist ? 'true' : 'false' }}"
+                                class="btn btn-lg rounded-xl flex-1 sm:flex-none sm:w-60 min-w-[11rem] px-6 font-semibold transition duration-200 hover:-translate-y-0.5 {{ $inWishlist ? 'border-2 border-[#E5484D] bg-[#FEF3F2] text-[#E5484D] hover:bg-[#FDE4E4] hover:border-[#E5484D]' : 'border-2 border-[#E5484D]/40 bg-white text-[#E5484D] hover:bg-[#FEF3F2] hover:border-[#E5484D]' }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="{{ $inWishlist ? 'currentColor' : 'none' }}">
+                                <path stroke-linejoin="round" d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10Z" />
+                            </svg>
+                            {{ $inWishlist ? __('In your Wish List') : __('Add to Wish List') }}
+                        </button>
                     @else
-                        <!-- ต้องล็อกอินก่อนสั่งซื้อ -->
-                        <a href="{{ route('login') }}" class="btn btn-lg rounded-xl border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white font-[Poppins] font-semibold px-10">
+                        <!-- ต้องล็อกอินก่อนสั่งซื้อ / เพิ่ม Wish List -->
+                        <a href="{{ route('login') }}" class="btn btn-lg rounded-xl flex-1 sm:flex-none sm:w-60 min-w-[11rem] px-6 font-semibold transition duration-200 hover:-translate-y-0.5 border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white">
                             {{ __('Add to Cart') }}
+                        </a>
+                        <a href="{{ route('login') }}" class="btn btn-lg rounded-xl flex-1 sm:flex-none sm:w-60 min-w-[11rem] px-6 font-semibold transition duration-200 hover:-translate-y-0.5 border-2 border-[#E5484D]/40 bg-white text-[#E5484D] hover:bg-[#FEF3F2] hover:border-[#E5484D]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="{{ $inWishlist ? 'currentColor' : 'none' }}">
+                                <path stroke-linejoin="round" d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10Z" />
+                            </svg>
+                            {{ __('Add to Wish List') }}
                         </a>
                     @endauth
                 </div>
+                @auth
+                    @if ($inWishlist)
+                        <p class="-mt-4 text-xs text-gray-500">{{ __('Tap the heart button again to remove it from your Wish List.') }}</p>
+                    @endif
+                @endauth
             </form>
 
-            <!-- add to wishlist -->
-            <div class="mt-5">
-                @auth
-                    <form method="POST" action="{{ $canWishlist ? route('wishlist.toggle', $product->id) : '#' }}">
-                        @csrf
-                        <button type="submit" class="inline-flex items-center gap-2 text-[#5A6BD5] hover:text-[#3B4BB0] disabled:opacity-50" data-test="wishlist-button" @disabled(! $canWishlist)>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="{{ $inWishlist ? 'currentColor' : 'none' }}">
-                                <path stroke-linejoin="round" d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10Z" />
-                            </svg>
-                            {{ $inWishlist ? __('remove from wishlist') : __('add to wishlist') }}
-                        </button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="inline-flex items-center gap-2 text-[#5A6BD5] hover:text-[#3B4BB0]">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linejoin="round" d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10Z" />
-                        </svg>
-                        {{ __('add to wishlist') }}
-                    </a>
-                @endauth
-            </div>
+            <!-- ฟอร์มของปุ่ม Wish List (ตัวปุ่มอยู่ข้าง Add to Cart ด้านบน) -->
+            @auth
+                <form id="wishlist-form" method="POST" action="{{ $canWishlist ? route('wishlist.toggle', $product->id) : '#' }}" class="hidden">
+                    @csrf
+                </form>
+            @endauth
         </div>
     </section>
 
