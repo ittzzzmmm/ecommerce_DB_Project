@@ -10,7 +10,7 @@ class WishlistController extends Controller
     public function index()
     {
         $wishlistIds = session('demo_wishlist', []);
-        $wishlists = Product::whereIn('id', $wishlistIds)->get();
+        $wishlists = Product::withStats()->whereIn('id', $wishlistIds)->get();
 
         return view('wishlist', compact('wishlists'));
     }

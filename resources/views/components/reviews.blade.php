@@ -31,6 +31,29 @@
         <h3 class="font-bold text-[#090F3B] mb-2">{{ __('Write a Review') }}</h3>
 
         @auth
+            @if ($hasReviewed ?? false)
+                <!-- เคยรีวิวสินค้านี้แล้ว: 1 คนรีวิวได้ 1 ครั้งต่อสินค้า -->
+                <div role="alert" class="flex items-start gap-3 rounded-xl border border-[#B9C2FF] bg-[#EEF0FB] px-4 py-3 text-[#3B4BB0]" data-test="review-already">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
+                    </svg>
+                    <div class="text-sm">
+                        <p class="font-semibold">{{ __('You have already reviewed this product.') }}</p>
+                        <p>{{ __('Each customer can post one review per product.') }}</p>
+                    </div>
+                </div>
+            @elseif (! ($hasPurchased ?? false))
+                <!-- ยังไม่เคยซื้อ: รีวิวไม่ได้ -->
+                <div role="alert" class="flex items-start gap-3 rounded-xl border border-[#FEDF89] bg-[#FFFAEB] px-4 py-3 text-[#B54708]" data-test="review-locked">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd" />
+                    </svg>
+                    <div class="text-sm">
+                        <p class="font-semibold">{{ __('Only customers who bought this product can review it.') }}</p>
+                        <p>{{ __('Place an order for this product, then come back to share your review.') }}</p>
+                    </div>
+                </div>
+            @else
             <form method="POST" action="{{ route('reviews.store', $product->id) }}" class="space-y-4">
                 @csrf
 
@@ -70,6 +93,7 @@
                     </button>
                 </div>
             </form>
+            @endif
         @else
             <div class="text-center py-4">
                 <p class="text-sm text-gray-600 mb-3">{{ __('Please login to rate and leave a comment.') }}</p>

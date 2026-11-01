@@ -2,38 +2,58 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Product;
-use App\Models\Review;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
     /**
      * บันทึกรีวิวสินค้าใหม่
+     * กติกา: ต้องเคยซื้อสินค้านี้ก่อน และ 1 คนรีวิวสินค้าหนึ่งได้ 1 ครั้ง (UNIQUE user_id, product_id)
      */
     public function store(Request $request, Product $product)
     {
-        // 1. ตรวจสอบความถูกต้องของข้อมูล (Rating 1-5 และมี Comment)
+        $user = $request->user();
+        $backToReviews = url()->previous().'#reviews';
+
+        // 1. ต้องเคยซื้อสินค้านี้ก่อน
+        if (! self::hasPurchased($user, $product)) {
+            return redirect()->to($backToReviews)
+                ->with('error', __('You can only review products you have purchased.'));
+        }
+
+        // 2. รีวิวซ้ำไม่ได้
+        if ($user->reviews()->where('product_id', $product->id)->exists()) {
+            return redirect()->to($backToReviews)
+                ->with('error', __('You have already reviewed this product.'));
+        }
+
+        // 3. ตรวจสอบความถูกต้องของข้อมูล (Rating 1-5 และมี Comment)
         $validated = $request->validate([
-            'rating'  => 'required|integer|between:1,5',
+            'rating' => 'required|integer|between:1,5',
             'comment' => 'required|string|max:1000',
         ]);
 
-        // 2. บันทึกรีวิวลง Database ผูกกับ User ที่ล็อกอินอยู่และสินค้าชิ้นนี้
-        $request->user()->reviews()->create([
+        // 4. บันทึกรีวิว (คะแนนเฉลี่ย/จำนวนรีวิว คำนวณสดตอนแสดงผล ไม่ต้องอัปเดตตาราง products)
+        $user->reviews()->create([
             'product_id' => $product->id,
-            'rating'     => $validated['rating'],
-            'comment'    => $validated['comment'],
+            'rating' => $validated['rating'],
+            'comment' => $validated['comment'],
         ]);
 
-        // 3. คำนวณจำนวนรีวิวและคะแนนเฉลี่ยใหม่ แล้วอัปเดตลงตาราง products
-        $product->update([
-            'reviews_count'      => $product->reviews()->count(),
-            'reviews_avg_rating' => $product->reviews()->avg('rating'),
-        ]);
+        return redirect()->to($backToReviews)
+            ->with('status', __('Thanks! Your review has been posted.'));
+    }
 
-        // 4. Redirect กลับมาหน้าเดิม พร้อม anchor #reviews เพื่อเลื่อนลงมาที่กล่องรีวิวทันที
-        return redirect()->to(url()->previous() . '#reviews')
-            ->with('success', 'บันทึกรีวิวของคุณเรียบร้อยแล้ว!');
+    /**
+     * ผู้ใช้คนนี้เคยสั่งซื้อสินค้านี้หรือยัง (มีออเดอร์ที่ไม่ถูกยกเลิก และมีสินค้านี้ใน order_items)
+     */
+    public static function hasPurchased(User $user, Product $product): bool
+    {
+        return $user->orders()
+            ->where('status', '!=', 'cancelled')
+            ->whereHas('items', fn ($query) => $query->where('product_id', $product->id))
+            ->exists();
     }
 }

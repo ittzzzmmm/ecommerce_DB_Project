@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,15 +17,31 @@ class Product extends Model
         'price',
         'stock',
         'image',
-        'reviews_avg_rating',
-        'reviews_count',
-        'sold',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'reviews_avg_rating' => 'decimal:1',
     ];
+
+    /**
+     * คะแนนเฉลี่ย / จำนวนรีวิว / ยอดขาย "คำนวณสด" จากตาราง reviews และ order_items
+     * (ไม่เก็บเป็นคอลัมน์ใน products ให้ตรงกับ ER / DB Design)
+     * ได้ attribute: reviews_avg_rating, reviews_count, sold
+     */
+    public function scopeWithStats(Builder $query): Builder
+    {
+        return $query->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->withSum('orderItems as sold', 'quantity');
+    }
+
+    /** เหมือน withStats แต่ใช้กับ product ที่โหลดมาแล้ว (เช่นหน้า show) */
+    public function loadStats(): static
+    {
+        return $this->loadAvg('reviews', 'rating')
+            ->loadCount('reviews')
+            ->loadSum('orderItems as sold', 'quantity');
+    }
 
     public function orderItems(): HasMany
     {

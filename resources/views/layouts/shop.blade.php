@@ -14,6 +14,8 @@
             $cartCount = collect(session('cart', []))->sum(fn ($item) => is_array($item)
                 ? (int) ($item['quantity'] ?? 0)
                 : (int) $item);
+            // จำนวนสินค้าใน Wish List (ตอนนี้ WishlistController เก็บใน session demo_wishlist)
+            $wishlistCount = count(session('demo_wishlist', []));
             $cartUrl = Route::has('cart.index') ? route('cart.index') : '#';
             $wishlistUrl = Route::has('wishlist.index') ? route('wishlist.index') : '#';
         @endphp
@@ -53,7 +55,10 @@
                 <div class="flex items-center gap-2 md:gap-4 shrink-0">
                     @auth
                         <!-- Wishlist -->
-                        <a href="{{ $wishlistUrl }}" class="btn btn-circle border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white" aria-label="Wishlist" title="{{ __('Wish List') }}">
+                        <a href="{{ $wishlistUrl }}" class="btn btn-circle border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white indicator" aria-label="Wishlist" title="{{ __('Wish List') }}">
+                            @if ($wishlistCount > 0)
+                                <span class="indicator-item badge badge-sm border-none bg-[#E5484D] text-white" data-test="wishlist-count">{{ $wishlistCount > 99 ? '99+' : $wishlistCount }}</span>
+                            @endif
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linejoin="round" d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10Z" />
                             </svg>
@@ -62,7 +67,7 @@
                         <!-- Cart + ตัวเลขจำนวนชิ้น -->
                         <a href="{{ $cartUrl }}" class="btn btn-circle border-none bg-[#090F3B] hover:bg-[#1E2A6E] text-white indicator" aria-label="Cart" title="{{ __('Cart') }}">
                             @if ($cartCount > 0)
-                                <span class="indicator-item badge badge-sm border-none bg-[#E5484D] text-white">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
+                                <span class="indicator-item badge badge-sm border-none bg-[#E5484D] text-white" data-test="cart-count">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
                             @endif
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h2l2.4 10.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.76L20 8H6.2" />
@@ -122,13 +127,40 @@
             @endauth
         </header>
 
-        <!-- แจ้งเตือนจาก backend เช่น "เพิ่มลงตะกร้าแล้ว" (session('status') / session('error')) -->
-        @if (session('status') || session('error'))
-            <div class="max-w-7xl w-full mx-auto px-4 md:px-8 pt-6">
-                <div role="alert" class="alert {{ session('error') ? 'alert-error' : 'alert-success' }} rounded-xl">
-                    <span>{{ session('error') ?? session('status') }}</span>
+        <!-- แจ้งเตือนเด้งมุมขวาบน แล้วหายเองใน 3 วิ
+             รับได้ทั้ง ->with('success', ...) / ->with('status', ...) = สีเขียว และ ->with('error', ...) = สีแดง -->
+        @php
+            $toastError = session('error');
+            $toastMessage = $toastError ?? session('success') ?? session('status');
+        @endphp
+        @if ($toastMessage)
+            <div id="flash-toast" role="status" aria-live="polite"
+                 class="fixed top-24 right-4 left-4 sm:left-auto z-50 sm:max-w-sm transition-all duration-300">
+                <div class="flex items-center gap-3 rounded-xl border px-4 py-3 shadow-lg
+                            {{ $toastError ? 'bg-[#FEF3F2] border-[#FECDCA] text-[#B42318]' : 'bg-[#ECFDF3] border-[#ABEFC6] text-[#067647]' }}">
+                    @if ($toastError)
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd" />
+                        </svg>
+                    @else
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
+                        </svg>
+                    @endif
+                    <span class="flex-1 font-medium">{{ $toastMessage }}</span>
+                    <button type="button" onclick="hideFlashToast()" class="btn btn-ghost btn-xs btn-circle" aria-label="{{ __('Close') }}">✕</button>
                 </div>
             </div>
+            <script>
+                function hideFlashToast() {
+                    const toast = document.getElementById('flash-toast');
+                    if (! toast) return;
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-8px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+                setTimeout(hideFlashToast, 3000);
+            </script>
         @endif
 
         <main class="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12">
