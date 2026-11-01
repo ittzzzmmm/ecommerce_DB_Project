@@ -3,11 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
     use HasFactory;
 
-    protected $guarded = []; // อนุญาตให้บันทึกข้อมูลทุกคอลัมน์ได้ทันที
+    protected $guarded = [];  // อนุญาตให้บันทึกข้อมูลทุกคอลัมน์ได้ทันที
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class)->latest();
+    }
 }
