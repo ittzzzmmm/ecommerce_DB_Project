@@ -17,6 +17,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use App\Models\Product;
 
 /*
@@ -64,6 +66,7 @@ $demoProducts = function () {
 
 Route::get('/', function () {
     $products = Product::withAvg('reviews', 'rating')
+        ->withSum('orderItems as sold', 'quantity')
         ->orderByDesc('reviews_avg_rating')
         ->take(10)
         ->get();
@@ -73,7 +76,7 @@ Route::get('/', function () {
 
 Route::get('/products', function (Request $request) {
 
-    $query = Product::query();
+    $query = Product::query()->withSum('orderItems as sold', 'quantity');
 
     // Search
     if ($request->filled('search')) {
@@ -108,12 +111,14 @@ Route::get('/products/{product}', function (Product $product) {
 
     // โหลดรูปภาพเพิ่มเติม
     $product->load('images');
+    $product->setAttribute('sold', $product->orderItems()->sum('quantity'));
 
     // ตรวจสอบ Wishlist (ชั่วคราว)
     $inWishlist = false;
 
     // สินค้าที่เกี่ยวข้อง
-    $related = Product::where('id', '!=', $product->id)
+    $related = Product::withSum('orderItems as sold', 'quantity')
+        ->where('id', '!=', $product->id)
         ->inRandomOrder()
         ->take(5)
         ->get();
@@ -192,6 +197,20 @@ Route::middleware(['auth'])->group(function () {
 
     })->name('wishlist.toggle');
 
+    //Cart controller
+    Route::get('/cart', [CartController::class, 'index'])
+        ->name('cart.index');
+    Route::post('/cart/add', [CartController::class, 'add'])
+        ->name('cart.add');
+    Route::put('/cart/{product}', [CartController::class, 'update'])
+        ->name('cart.update');
+    Route::delete('/cart/{product}', [CartController::class, 'remove'])
+        ->name('cart.remove');
+    Route::post('/checkout', [CheckoutController::class, 'store'])
+        ->name('checkout.store');
+
 });
+
+
 
 require __DIR__.'/settings.php';
