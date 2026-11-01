@@ -7,84 +7,78 @@ use App\Models\Product;
 
 class CartController extends Controller
 {
-    public function index(){
-        $cart = session('cart', []);
-        $products = Product::whereIn('id', array_keys($cart))
-            ->get()
-            ->keyBy('id');
-        $items = collect($cart)->map(function ($quantity, $id) use ($products) {
-            if (!$products->has($id)) {
-                return null;
-            }
-            $product = $products[$id];
-            return [
-                'product' => $product,
-                'quantity' => $quantity,
-                'subtotal' => $product->price * $quantity,
-            ];
-        })->filter()->values();
-        $subtotal = $items->sum('subtotal');
-        return view('cart.index', compact('items', 'subtotal'));
-
-    }
-
-    public function add(Request $request)
+    // แสดงหน้าตะกร้าสินค้า
+    public function index()
     {
-        $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-        ]);
+        $cart = session()->get('cart', []);
+        
+        $subtotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
+        $shipping = 0;
+        $total = $subtotal + $shipping;
 
-        $product = Product::findOrFail($validated['product_id']);
-
-        $cart = session('cart', []);
-
-        $quantity = $validated['quantity'];
-
-        $newQuantity = ($cart[$product->id] ?? 0) + $quantity;
-
-        if ($newQuantity > $product->stock) {
-            return back()->with('error', 'Insufficient stock');
-        }
-
-        $cart[$product->id] = $newQuantity;
-
-        session(['cart' => $cart]);
-
-        return back()->with('status', __('Added to cart!'));
+        return view('cart.index', compact('cart', 'subtotal', 'shipping', 'total'));
     }
 
-    public function update(Request $request, Product $product){
-        $validated = $request->validate([
-            'quantity' => 'required|integer|min:1',
-        ]);
+    // เพิ่มสินค้าลงตะกร้า (จากปุ่ม Add to Cart ของเพื่อน)
+    public function add(Request $request)
+{
+    $request->validate([
+        'product_id' => 'required|exists:products,id',
+        'quantity'   => 'required|integer|min:1',
+    ]);
 
-        $quantity = $validated['quantity'];
+    // ตัด with('images') ออก เปลี่ยนเป็น findOrFail ตรงๆ
+    $product = Product::findOrFail($request->product_id);
 
-        if ($quantity > $product->stock) {
-            return back()->with('error', 'สินค้าในสต็อกไม่เพียงพอ');
-        }
+    // ดึง URL รูปภาพ
+    $imageUrl = $product->image 
+        ? (str_starts_with($product->image, 'http') ? $product->image : asset('storage/' . $product->image))
+        : null;
 
-        $cart = session('cart', []);
+    $cart = session()->get('cart', []);
+    $id = $product->id;
 
-        if (!array_key_exists($product->id, $cart)) {
-            return back();
-        }
-
-        $cart[$product->id] = $quantity;
-
-        session(['cart' => $cart]);
-
-        return back()->with('status', __('Cart updated.'));
+    if (isset($cart[$id])) {
+        $cart[$id]['quantity'] += (int) $request->quantity;
+    } else {
+        $cart[$id] = [
+            'id'       => $product->id,
+            'name'     => $product->name,
+            'price'    => (float) $product->price,
+            'image'    => $imageUrl,
+            'quantity' => (int) $request->quantity,
+        ];
     }
 
-    public function remove(Product $product){
-        $cart = session('cart', []);
+    session()->put('cart', $cart);
 
-        unset($cart[$product->id]);
+    return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าแล้ว');
+}
 
-        session(['cart' => $cart]);
+    // ปรับจำนวน (+ / -) ในหน้า cart
+    public function update(Request $request, $id)
+    {
+        $quantity = (int) $request->input('quantity', 1);
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$id]) && $quantity > 0) {
+            $cart[$id]['quantity'] = $quantity;
+            session()->put('cart', $cart);
+        }
 
         return back();
+    }
+
+    // ลบสินค้าออกจากตะกร้า
+    public function remove($id)
+    {
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
+            session()->put('cart', $cart);
+        }
+
+        return back()->with('success', 'ลบสินค้าออกจากตะกร้าแล้ว');
     }
 }
