@@ -51,7 +51,7 @@ class ProductController extends Controller
         $hasReviewed = $user ? $product->reviews->contains('user_id', $user->id) : false;
 
         // ตรวจสอบสถานะ Wishlist
-        $inWishlist = in_array($product->id, session('demo_wishlist', []));
+        $inWishlist = $user ? $user->wishlists()->where('product_id', $product->id)->exists() : false;
 
         // สินค้าแนะนำเพิ่มเติม 5 ชิ้น
         $related = Product::withStats()->where('id', '!=', $product->id)
