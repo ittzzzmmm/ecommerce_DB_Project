@@ -32,7 +32,9 @@ class Product extends Model
     {
         return $query->withAvg('reviews', 'rating')
             ->withCount('reviews')
-            ->withSum('orderItems as sold', 'quantity');
+            ->withSum(['orderItems as sold' => fn (Builder $items) => $items->whereHas(
+                'order', fn (Builder $order) => $order->where('status', '!=', 'cancelled')
+            )], 'quantity');
     }
 
     /** เหมือน withStats แต่ใช้กับ product ที่โหลดมาแล้ว (เช่นหน้า show) */
@@ -40,7 +42,9 @@ class Product extends Model
     {
         return $this->loadAvg('reviews', 'rating')
             ->loadCount('reviews')
-            ->loadSum('orderItems as sold', 'quantity');
+            ->loadSum(['orderItems as sold' => fn ($items) => $items->whereHas(
+                'order', fn ($order) => $order->where('status', '!=', 'cancelled')
+            )], 'quantity');
     }
 
     public function orderItems(): HasMany
