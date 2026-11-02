@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
     // หน้าแรก (Home)
-    public function home()
+    public function home(): View
     {
         // ดึงจาก DB จริง เรียงตามคะแนนรีวิว
         $products = Product::withStats()->orderByDesc('reviews_avg_rating')->get();
@@ -17,7 +18,7 @@ class ProductController extends Controller
     }
 
     // หน้ารวมสินค้า ค้นหา และแบ่งหน้า (Products Index)
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = Product::withStats();
 
@@ -40,7 +41,7 @@ class ProductController extends Controller
     }
 
     // หน้ารายละเอียดสินค้า (Product Detail)
-    public function show(Product $product)
+    public function show(Product $product): View
     {
         // โหลดรีวิวพร้อมผู้เขียน (ดึงแค่ id, name ของ user) + คะแนนเฉลี่ย/จำนวนรีวิว/ยอดขายแบบคำนวณสด
         $product->load(['reviews.user:id,name'])->loadStats();

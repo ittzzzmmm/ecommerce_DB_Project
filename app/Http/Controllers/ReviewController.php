@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class ReviewController extends Controller
@@ -12,7 +13,7 @@ class ReviewController extends Controller
      * บันทึกรีวิวสินค้าใหม่
      * กติกา: ต้องเคยซื้อสินค้านี้ก่อน และ 1 คนรีวิวสินค้าหนึ่งได้ 1 ครั้ง (UNIQUE user_id, product_id)
      */
-    public function store(Request $request, Product $product)
+    public function store(Request $request, Product $product): RedirectResponse
     {
         $user = $request->user();
         $backToReviews = url()->previous().'#reviews';

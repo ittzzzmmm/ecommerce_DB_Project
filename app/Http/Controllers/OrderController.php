@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -10,7 +11,7 @@ class OrderController extends Controller
     /**
      * ประวัติการสั่งซื้อของผู้ใช้ (My Purchase)
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $orders = $request->user()->orders()
             ->with('items.product:id,name,image')
@@ -24,7 +25,7 @@ class OrderController extends Controller
     /**
      * รายละเอียดคำสั่งซื้อ + ปุ่มไปรีวิวสินค้าแต่ละชิ้น
      */
-    public function show(Request $request, Order $order)
+    public function show(Request $request, Order $order): View
     {
         // ดูได้เฉพาะออเดอร์ของตัวเอง
         abort_unless((int) $order->user_id === (int) $request->user()->id, 404);

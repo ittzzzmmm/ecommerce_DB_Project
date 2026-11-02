@@ -3,21 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $cart = session('cart', []);
         $products = Product::whereIn('id', array_keys($cart))->get()->keyBy('id');
-
         foreach ($cart as $id => &$item) {
             if (! is_array($item)) {
                 $item = ['quantity' => (int) $item];
             }
-            $product = $products->get($id);
+            $product = $products->get((int) $id);
             if (! $product || (int) ($item['quantity'] ?? 0) < 1) {
                 unset($cart[$id]);
 
@@ -36,22 +38,26 @@ class CartController extends Controller
 
         session(['cart' => $cart]);
 
-        $itemCount = collect($cart)->sum('quantity');
-        $subtotal = collect($cart)->sum(fn ($item) => $item['price'] * $item['quantity']);
+        $itemCount = 0;
+        $subtotal = 0;
+        foreach ($cart as $item) {
+            $itemCount += (int) ($item['quantity'] ?? 0);
+            $subtotal += (float) ($item['price'] ?? 0) * (int) ($item['quantity'] ?? 0);
+        }
         $shipping = 0;
         $total = $subtotal + $shipping;
 
         return view('cart.index', compact('cart', 'itemCount', 'subtotal', 'shipping', 'total'));
     }
 
-    public function add(Request $request)
+    public function add(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'product_id' => ['required', 'integer', 'exists:products,id'],
             'quantity' => ['required', 'integer', 'min:1'],
         ]);
 
-        $product = Product::findOrFail($validated['product_id']);
+        $product = Product::query()->whereKey($validated['product_id'])->firstOrFail();
         $cart = session('cart', []);
         $id = $product->id;
         $existingItem = $cart[$id] ?? [];
@@ -81,7 +87,7 @@ class CartController extends Controller
         return to_route('cart.index')->with('status', __('Added to cart. Stock and sold totals update after checkout.'));
     }
 
-    public function update(Request $request, Product $product)
+    public function update(Request $request, Product $product): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'quantity' => ['required', 'integer', 'min:1'],
@@ -113,7 +119,7 @@ class CartController extends Controller
         return to_route('cart.index')->with('status', __('Cart updated.'));
     }
 
-    public function remove(Product $product)
+    public function remove(Product $product): RedirectResponse
     {
         $cart = session('cart', []);
         unset($cart[$product->id]);
@@ -124,6 +130,9 @@ class CartController extends Controller
 
     /**
      * ตัวเลขสรุปของตะกร้า (ใช้ตอบกลับปุ่ม + / −)
+     */
+    /** @param array<int|string, array<string, int|float|string|null>> $cart
+     * @return array<string, int|float|string>
      */
     private function summary(array $cart, Product $product): array
     {

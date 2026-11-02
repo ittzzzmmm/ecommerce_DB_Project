@@ -34,7 +34,7 @@ class ReviewSeeder extends Seeder
             // กติกาเดียวกับหน้าเว็บ: ต้องเคยซื้อก่อนถึงรีวิวได้ (ออเดอร์มาจาก OrderSeeder)
             // ⇒ sold ของสินค้าจะไม่มีทางน้อยกว่าจำนวนรีวิว
             if (! ReviewController::hasPurchased($user, $product)) {
-                $this->command?->warn("Skip review: {$email} has not purchased {$productName} (add it to OrderSeeder).");
+                $this->command->warn("Skip review: {$email} has not purchased {$productName} (add it to OrderSeeder).");
 
                 continue;
             }

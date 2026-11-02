@@ -44,7 +44,7 @@ Route::delete('/cart/{product}', [CartController::class, 'remove'])->name('cart.
 
 // --- Dev Login (เฉพาะช่วงทดสอบ) ---
 Route::get('/dev-login/{id?}', function ($id = 1) {
-    $user = User::find($id) ?? User::first();
+    $user = User::query()->whereKey($id)->first() ?? User::query()->first();
 
     if (! $user) {
         $user = User::create([

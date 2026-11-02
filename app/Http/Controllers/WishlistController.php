@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
@@ -11,7 +13,7 @@ use Illuminate\Http\Request;
  */
 class WishlistController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         // ใหม่สุดขึ้นก่อน
         $productIds = $request->user()->wishlists()->latest('id')->pluck('product_id');
@@ -25,7 +27,7 @@ class WishlistController extends Controller
         return view('wishlist', compact('wishlists'));
     }
 
-    public function toggle(Request $request, Product $product)
+    public function toggle(Request $request, Product $product): RedirectResponse
     {
         $existing = $request->user()->wishlists()->where('product_id', $product->id)->first();
 

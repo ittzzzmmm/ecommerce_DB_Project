@@ -6,13 +6,15 @@ use App\Models\Coupon;
 use App\Models\CouponUsage;
 use App\Models\Order;
 use App\Models\Product;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class CheckoutController extends Controller
 {
-    public function index()
+    public function index(): View|RedirectResponse
     {
         $cart = session('cart', []);
         if (empty($cart)) {
@@ -24,7 +26,7 @@ class CheckoutController extends Controller
             if (! is_array($item)) {
                 $item = ['quantity' => (int) $item];
             }
-            $product = $products->get($id);
+            $product = $products->get((int) $id);
             if (! $product || (int) ($item['quantity'] ?? 0) < 1) {
                 unset($cart[$id]);
 
@@ -46,7 +48,10 @@ class CheckoutController extends Controller
             return to_route('cart.index')->with('error', __('Your cart contains products that are no longer available.'));
         }
 
-        $subtotal = collect($cart)->sum(fn ($item) => $item['price'] * $item['quantity']);
+        $subtotal = 0;
+        foreach ($cart as $item) {
+            $subtotal += (float) ($item['price'] ?? 0) * (int) ($item['quantity'] ?? 0);
+        }
         $shipping = 0;
         $couponCode = session('coupon_code');
         $coupon = $couponCode ? Coupon::where('code', strtoupper($couponCode))->first() : null;
@@ -67,7 +72,7 @@ class CheckoutController extends Controller
         return view('checkout.index', compact('cart', 'subtotal', 'discount', 'shipping', 'total', 'user', 'couponCode', 'defaultAddress', 'addressSource'));
     }
 
-    public function applyCoupon(Request $request)
+    public function applyCoupon(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'coupon_code' => ['required', 'string', 'max:50'],
@@ -85,7 +90,7 @@ class CheckoutController extends Controller
         return to_route('checkout.index')->with('status', __('Coupon applied.'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'address' => ['required', 'string', 'max:2000'],
@@ -182,7 +187,7 @@ class CheckoutController extends Controller
         return to_route('orders.show', $order)->with('status', __('Order #:number placed successfully.', ['number' => $order->id]));
     }
 
-    private function couponIsAvailable(Coupon $coupon, int $userId): bool
+    private function couponIsAvailable(Coupon $coupon, int|string|null $userId): bool
     {
         $now = now();
 

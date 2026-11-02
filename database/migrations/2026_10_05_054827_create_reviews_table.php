@@ -22,8 +22,7 @@ return new class extends Migration
                 ->constrained('products')
                 ->cascadeOnDelete();
 
-            $table->unsignedTinyInteger('rating')
-                ->check('rating >= 1 AND rating <= 5');
+            $table->unsignedTinyInteger('rating');
 
             $table->text('comment')->nullable();
 
