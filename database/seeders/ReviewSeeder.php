@@ -27,14 +27,15 @@ class ReviewSeeder extends Seeder
             $user = User::where('email', $email)->first();
             $product = Product::where('name', $productName)->first();
 
-            if (!$user || !$product) {
+            if (! $user || ! $product) {
                 continue;
             }
 
             // กติกาเดียวกับหน้าเว็บ: ต้องเคยซื้อก่อนถึงรีวิวได้ (ออเดอร์มาจาก OrderSeeder)
             // ⇒ sold ของสินค้าจะไม่มีทางน้อยกว่าจำนวนรีวิว
-            if (!ReviewController::hasPurchased($user, $product)) {
+            if (! ReviewController::hasPurchased($user, $product)) {
                 $this->command?->warn("Skip review: {$email} has not purchased {$productName} (add it to OrderSeeder).");
+
                 continue;
             }
 

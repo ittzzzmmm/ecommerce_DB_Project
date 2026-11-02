@@ -21,12 +21,13 @@ class CheckoutController extends Controller
 
         $products = Product::whereIn('id', array_keys($cart))->get()->keyBy('id');
         foreach ($cart as $id => &$item) {
-            if (!is_array($item)) {
+            if (! is_array($item)) {
                 $item = ['quantity' => (int) $item];
             }
             $product = $products->get($id);
-            if (!$product || (int) ($item['quantity'] ?? 0) < 1) {
+            if (! $product || (int) ($item['quantity'] ?? 0) < 1) {
                 unset($cart[$id]);
+
                 continue;
             }
 
@@ -35,7 +36,7 @@ class CheckoutController extends Controller
             $item['price'] = (float) $product->price;
             $item['stock'] = (int) $product->stock;
             $item['image'] = $product->image
-                ? (str_starts_with($product->image, 'http') ? $product->image : asset('storage/' . $product->image))
+                ? (str_starts_with($product->image, 'http') ? $product->image : asset('storage/'.$product->image))
                 : null;
         }
         unset($item);
@@ -73,7 +74,7 @@ class CheckoutController extends Controller
         ]);
 
         $coupon = Coupon::where('code', strtoupper(trim($validated['coupon_code'])))->first();
-        if (!$coupon || !$this->couponIsAvailable($coupon, $request->user()->id)) {
+        if (! $coupon || ! $this->couponIsAvailable($coupon, $request->user()->id)) {
             return back()->withInput()->withErrors([
                 'coupon_code' => __('This coupon is invalid, expired, or already used.'),
             ]);
@@ -109,7 +110,7 @@ class CheckoutController extends Controller
                 $product = $products->get($productId);
                 $quantity = (int) ($item['quantity'] ?? 0);
 
-                if (!$product || $quantity < 1 || $quantity > $product->stock) {
+                if (! $product || $quantity < 1 || $quantity > $product->stock) {
                     throw ValidationException::withMessages([
                         'cart' => __('Stock changed while you were shopping. Update your cart and try again.'),
                     ]);
@@ -122,7 +123,7 @@ class CheckoutController extends Controller
             $couponCode = session('coupon_code');
             if ($couponCode) {
                 $coupon = Coupon::where('code', strtoupper($couponCode))->lockForUpdate()->first();
-                if (!$coupon || !$this->couponIsAvailable($coupon, $request->user()->id)) {
+                if (! $coupon || ! $this->couponIsAvailable($coupon, $request->user()->id)) {
                     throw ValidationException::withMessages([
                         'coupon_code' => __('This coupon is no longer available.'),
                     ]);
@@ -189,6 +190,6 @@ class CheckoutController extends Controller
             && $coupon->start_at->lte($now)
             && $coupon->expire_at->gte($now)
             && ($coupon->usage_limit === null || $coupon->used_count < $coupon->usage_limit)
-            && !CouponUsage::where('coupon_id', $coupon->id)->where('user_id', $userId)->exists();
+            && ! CouponUsage::where('coupon_id', $coupon->id)->where('user_id', $userId)->exists();
     }
 }

@@ -17,7 +17,7 @@ Route::get('/products/{product}', [ProductController::class, 'show'])->name('pro
 
 // --- ระบบที่ต้องเข้าสู่ระบบ (Authenticated Only) ---
 Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', fn() => redirect()->route('home'))->name('dashboard');
+    Route::get('dashboard', fn () => redirect()->route('home'))->name('dashboard');
 
     // Wishlist
     Route::get('wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
@@ -42,12 +42,11 @@ Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 Route::patch('/cart/{product}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/{product}', [CartController::class, 'remove'])->name('cart.remove');
 
-
 // --- Dev Login (เฉพาะช่วงทดสอบ) ---
 Route::get('/dev-login/{id?}', function ($id = 1) {
     $user = User::find($id) ?? User::first();
 
-    if (!$user) {
+    if (! $user) {
         $user = User::create([
             'name' => 'Developer',
             'email' => 'dev@example.com',
@@ -60,4 +59,4 @@ Route::get('/dev-login/{id?}', function ($id = 1) {
     return redirect('/')->with('success', "Logged in as {$user->name} (Dev Mode)");
 })->name('dev.login');
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';

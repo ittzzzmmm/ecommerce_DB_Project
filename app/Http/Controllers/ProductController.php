@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -23,15 +23,15 @@ class ProductController extends Controller
 
         // ค้นหาตามชื่อสินค้า
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         // จัดเรียงลำดับ
         match ($request->input('sort')) {
-            'newest'     => $query->latest(),
-            'price_asc'  => $query->orderBy('price', 'asc'),
+            'newest' => $query->latest(),
+            'price_asc' => $query->orderBy('price', 'asc'),
             'price_desc' => $query->orderBy('price', 'desc'),
-            default      => $query->orderByDesc('reviews_avg_rating'),
+            default => $query->orderByDesc('reviews_avg_rating'),
         };
 
         $products = $query->paginate(20)->withQueryString();

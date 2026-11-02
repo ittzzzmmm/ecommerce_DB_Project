@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
@@ -13,12 +14,13 @@ class CartController extends Controller
         $products = Product::whereIn('id', array_keys($cart))->get()->keyBy('id');
 
         foreach ($cart as $id => &$item) {
-            if (!is_array($item)) {
+            if (! is_array($item)) {
                 $item = ['quantity' => (int) $item];
             }
             $product = $products->get($id);
-            if (!$product || (int) ($item['quantity'] ?? 0) < 1) {
+            if (! $product || (int) ($item['quantity'] ?? 0) < 1) {
                 unset($cart[$id]);
+
                 continue;
             }
 
@@ -27,7 +29,7 @@ class CartController extends Controller
             $item['price'] = (float) $product->price;
             $item['stock'] = (int) $product->stock;
             $item['image'] = $product->image
-                ? (str_starts_with($product->image, 'http') ? $product->image : asset('storage/' . $product->image))
+                ? (str_starts_with($product->image, 'http') ? $product->image : asset('storage/'.$product->image))
                 : null;
         }
         unset($item);
@@ -63,7 +65,7 @@ class CartController extends Controller
         }
 
         $imageUrl = $product->image
-            ? (str_starts_with($product->image, 'http') ? $product->image : asset('storage/' . $product->image))
+            ? (str_starts_with($product->image, 'http') ? $product->image : asset('storage/'.$product->image))
             : null;
 
         $cart[$id] = [
@@ -86,7 +88,7 @@ class CartController extends Controller
         ]);
 
         $cart = session('cart', []);
-        if (!isset($cart[$product->id])) {
+        if (! isset($cart[$product->id])) {
             return $request->expectsJson()
                 ? response()->json(['message' => __('This item is no longer in your cart.')], 404)
                 : to_route('cart.index');
@@ -136,7 +138,7 @@ class CartController extends Controller
             'stock' => (int) $product->stock,
             'line_total' => number_format($price * $quantity, 2),
             'item_count' => $itemCount,
-            'item_label' => $itemCount.' '.\Illuminate\Support\Str::plural('item', $itemCount),
+            'item_label' => $itemCount.' '.Str::plural('item', $itemCount),
             'subtotal' => number_format($subtotal, 2),
             'total' => number_format($subtotal, 2),
             'message' => __('Cart updated.'),

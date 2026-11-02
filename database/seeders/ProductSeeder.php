@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Product;
+use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
 {
@@ -51,7 +51,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'Cat Litter 10L',
-                'Clumping, low-dust cat litter with odor control.',199, 80, 4.4, 150, 1240,
+                'Clumping, low-dust cat litter with odor control.', 199, 80, 4.4, 150, 1240,
                 [
                     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREXSdxVEt3ZojIRsAhPnQ4v5XUiOxIO34KozRHE4QY7g&s=10',
                 ],
